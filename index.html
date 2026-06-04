@@ -6,8 +6,14 @@
 <meta name="theme-color" content="#c9967a">
 <title>Sharvi – Premium Resin Jewellery</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
 <style>
-/* CSS VARIABLES & RESET */
 :root {
   --rose: #c9967a; --rose-dark: #a87560; --rose-light: #f0d8cc; --rose-pale: #faf4f1;
   --text: #2c211d; --text-light: #7a5c52; --white: #ffffff;
@@ -15,26 +21,281 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height:100%; background:var(--cream); font-family:'Jost',sans-serif; color:var(--text); overscroll-behavior:none; }
-
 #app { max-width:430px; margin:0 auto; min-height:100vh; background:var(--white); position:relative; overflow-x:hidden; box-shadow: 0 0 40px rgba(0,0,0,0.05); }
-
 .page { display:none; min-height:100vh; padding-bottom:90px; }
 .page.active { display:block; animation: fadeUp 0.4s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
-
-/* BUTTONS & INPUTS */
 .btn-primary { width:100%; padding:15px; background:linear-gradient(135deg, var(--rose), var(--rose-dark)); color:#fff; border:none; border-radius:50px; font-family:'Jost',sans-serif; font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 8px 25px rgba(201, 150, 122, 0.4); }
 .btn-outline { width:100%; padding:14px; background:transparent; color:var(--rose-dark); border:1.5px solid var(--rose); border-radius:50px; font-family:'Jost',sans-serif; font-size:15px; font-weight:600; cursor:pointer; }
 .form-group { margin-bottom:15px; }
-.form-input { width:100%; padding:14px 16px; border-radius:12px; border:1.5px solid var(--rose-light); background:var(--rose-pale); font-family:'Jost',sans-serif; font-size:14px; outline:none; transition: border-color 0.3s; }
-.form-input:focus { border-color:var(--rose); }
-
-/* AUTHENTICATION PAGE (LANDING) */
+.form-input { width:100%; padding:14px 16px; border-radius:12px; border:1.5px solid var(--rose-light); background:var(--rose-pale); font-family:'Jost',sans-serif; font-size:14px; outline:none; }
 .auth-wrapper { padding: 40px 20px; display:flex; flex-direction:column; justify-content:center; min-height:100vh; background:linear-gradient(160deg, #fdf8f5 0%, #faf4f1 100%); }
 .auth-header { text-align:center; margin-bottom:30px; }
 .auth-header h1 { font-family:'Cormorant Garamond',serif; font-size:42px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px;}
 .auth-tabs { display:flex; background:var(--rose-pale); border-radius:50px; padding:4px; margin-bottom:24px; }
-.auth-tab { flex:1; text-align:center; padding:12px; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-light); transition:all 0.3s; }
+.auth-tab { flex:1; text-align:center; padding:12px; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-light); }
+.auth-tab.active { background:var(--white); color:var(--rose); box-shadow:var(--shadow); }
+.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:rgba(255,255,255,0.98); border-top:1px solid var(--rose-light); display:none; justify-content:space-around; align-items:center; padding:12px 0 20px; z-index:100; }
+.nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+.nav-item svg { width:24px; height:24px; stroke:var(--text-light); }
+.nav-item span { font-size:10px; color:var(--text-light); }
+.nav-item.active svg { stroke:var(--rose); }
+.nav-item.active span { color:var(--rose); }
+.page-header { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 15px; position:sticky; top:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); z-index:50; border-bottom:1px solid var(--rose-pale);}
+.page-header h2 { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:var(--text); }
+.product-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:20px; }
+.product-card { background:var(--white); border-radius:var(--radius); padding:15px; border:1px solid var(--rose-pale); text-align:center; }
+.toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(44, 33, 29, 0.95); color:#fff; padding:14px 24px; border-radius:50px; font-size:13px; opacity:0; transition:all 0.3s; pointer-events:none; z-index:999; }
+.toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="auth-page" class="page active">
+    <div class="auth-wrapper">
+      <div class="auth-header">
+        <h1>Sharvi</h1>
+        <p style="color:var(--text-light); font-size:14px;">Handcrafted Resin Magic</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</div>
+        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</div>
+      </div>
+
+      <div id="form-login">
+        <div class="form-group"><input class="form-input" type="email" id="login-email" placeholder="Email Address"></div>
+        <div class="form-group"><input class="form-input" type="password" id="login-pass" placeholder="Password"></div>
+        <button class="btn-primary" onclick="doLogin()">Secure Login</button>
+      </div>
+
+      <div id="form-register" style="display:none;">
+        <div id="step-1-register">
+          <div class="form-group"><input class="form-input" type="text" id="reg-name" placeholder="Full Name"></div>
+          <div class="form-group"><input class="form-input" type="email" id="reg-email" placeholder="Email Address"></div>
+          <div class="form-group"><input class="form-input" type="password" id="reg-pass" placeholder="Create Password"></div>
+          <button class="btn-primary" onclick="sendEmailOTP()">Send Email OTP</button>
+        </div>
+        
+        <div id="step-2-otp" style="display:none; text-align:center;">
+          <p style="margin-bottom:15px; font-size:14px; color:var(--text-light);">We've sent an OTP to your email.</p>
+          <div class="form-group"><input class="form-input" type="text" id="reg-otp" placeholder="Enter 6-digit OTP" style="text-align:center; letter-spacing:5px; font-weight:bold; font-size:18px;"></div>
+          <button class="btn-primary" onclick="verifyOTPAndRegister()">Verify & Create Account</button>
+          <p style="margin-top:15px; font-size:12px; color:var(--rose); cursor:pointer;" onclick="location.reload()">← Change Details</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="home-page" class="page">
+    <div class="page-header">
+      <h2 style="font-family:'Cormorant Garamond'; font-size:30px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Sharvi</h2>
+      <button style="border:none; background:none; font-size:20px;" onclick="showToast('Cart Loading...')">🛒</button>
+    </div>
+    <div style="padding:20px;">
+      <h3>Exquisite Resin Collection</h3>
+      <p style="color:var(--text-light); font-size:14px; margin-top:5px;">Select your premium handmade pieces below:</p>
+    </div>
+    <div class="product-grid">
+      <div class="product-card" onclick="placeRealOrder('Rose Ring', 499)">🌸<br><b>Rose Ring</b><br>₹499<br><br><button class="btn-primary" style="padding:5px; font-size:12px;">Order Now</button></div>
+      <div class="product-card" onclick="placeRealOrder('Ocean Pendant', 699)">🌊<br><b>Ocean Pendant</b><br>₹699<br><br><button class="btn-primary" style="padding:5px; font-size:12px;">Order Now</button></div>
+    </div>
+  </div>
+
+  <div id="about-page" class="page">
+    <div class="page-header"><h2>About Us</h2></div>
+    <div style="padding:30px 20px; text-align:center;">
+      <h1 style="font-family:'Cormorant Garamond'; font-size:36px; color:var(--rose-dark); margin-bottom:15px;">Our Story</h1>
+      <p style="color:var(--text-light); line-height:1.6; font-size:15px;">
+        Sharvi designs bespoke luxury resin items using authentic materials, bringing high-end craft directly to our esteemed clients across India.
+      </p>
+    </div>
+  </div>
+
+  <div id="profile-page" class="page">
+    <div class="page-header"><h2>My Profile</h2></div>
+    <div style="padding:30px 20px; text-align:center;">
+      <div style="font-size:60px; margin-bottom:10px;">👤</div>
+      <h3 id="display-name" style="font-family:'Cormorant Garamond'; font-size:28px;">Loading...</h3>
+      <p id="display-email" style="color:var(--text-light); font-size:14px; margin-bottom:30px;">Loading...</p>
+      <button class="btn-outline" style="border-color:#e57373; color:#e57373;" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="main-nav">
+    <div class="nav-item active" onclick="showPage('home-page', this)"><span>Home</span></div>
+    <div class="nav-item" onclick="showPage('about-page', this)"><span>About Us</span></div>
+    <div class="nav-item" onclick="showPage('profile-page', this)"><span>Profile</span></div>
+  </nav>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==========================================
+// 1. paste your firebase credentials here
+// ==========================================
+const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ==========================================
+// 2. paste your emailjs credentials here
+// ==========================================
+// Go to emailjs.com -> Account -> API Keys
+emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); 
+
+let generatedOTP = "";
+
+// Auth Status Listener
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    document.getElementById('main-nav').style.display = 'flex';
+    document.getElementById('display-name').innerText = user.displayName || "Valued Customer";
+    document.getElementById('display-email').innerText = user.email;
+    showPage('home-page');
+  } else {
+    document.getElementById('main-nav').style.display = 'none';
+    showPage('auth-page');
+  }
+});
+
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
+}
+
+// Send Real Email OTP using EmailJS
+function sendEmailOTP() {
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  if(!name || !email) { showToast("Please fill all details"); return; }
+
+  // Generate 6 Digit Code
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // EmailJS configuration variables mapped to your template
+  const templateParams = {
+    to_name: name,
+    to_email: email,
+    otp_code: generatedOTP
+  };
+
+  showToast("Sending OTP...");
+
+  // Send through EmailJS (Connects your Brevo SMTP server securely behind the scenes)
+  emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_TEMPLATE_ID', templateParams)
+    .then(() => {
+      document.getElementById('step-1-register').style.display = 'none';
+      document.getElementById('step-2-otp').style.display = 'block';
+      showToast("OTP sent successfully to email! 📬");
+    }, (err) => {
+      showToast("Failed to send email. Check EmailJS setup.");
+      console.log(err);
+    });
+}
+
+// Verify OTP and Save User in Firebase Authentication Database
+function verifyOTPAndRegister() {
+  const enteredOtp = document.getElementById('reg-otp').value;
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-pass').value;
+
+  if(enteredOtp !== generatedOTP) { showToast("Invalid OTP code!"); return; }
+
+  showToast("Creating Secure Account...");
+  
+  auth.createUserWithEmailAndPassword(email, password)
+    .then((result) => {
+      return result.user.updateProfile({ displayName: name });
+    })
+    .then(() => {
+      showToast("Registration Complete! Welcome 🎉");
+    })
+    .catch((error) => {
+      showToast(error.message);
+    });
+}
+
+// Login from Cloud Auth
+function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  if(!email || !pass) { showToast("Enter email and password"); return; }
+
+  showToast("Verifying Credentials...");
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
+      showToast("Logged in successfully!");
+    })
+    .catch((error) => {
+      showToast(error.message);
+    });
+}
+
+// Logout System
+function doLogout() {
+  auth.signOut().then(() => { showToast("Logged out successfully"); });
+}
+
+// PLACE REAL TIME ORDERS IN CLOUD FIRESTORE DATABASE
+function placeRealOrder(itemName, price) {
+  const user = auth.currentUser;
+  if(!user) { showToast("Please login first"); return; }
+
+  showToast("Processing Order...");
+
+  const orderData = {
+    customerName: user.displayName || "Walk-in User",
+    customerEmail: user.email,
+    uid: user.uid,
+    productName: itemName,
+    amountPaid: price,
+    orderDate: new Date().toLocaleString("en-IN"),
+    orderStatus: "Pending / Confirmed"
+  };
+
+  // Push straight to Cloud Firestore 'orders' collection
+  db.collection("orders").add(orderData)
+    .then(() => {
+      showToast(`Order Placed for ${itemName}! 🎉 Check Dashboard.`);
+    })
+    .catch((err) => {
+      showToast("Database error: " + err.message);
+    });
+}
+
+function showPage(pageId, navElement = null) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  if(navElement) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    navElement.classList.add('active');
+  }
+  window.scrollTo(0,0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerText = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>.auth-tab { flex:1; text-align:center; padding:12px; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-light); transition:all 0.3s; }
 .auth-tab.active { background:var(--white); color:var(--rose); box-shadow:var(--shadow); }
 
 /* BOTTOM NAV (HIDDEN INITIALLY) */
