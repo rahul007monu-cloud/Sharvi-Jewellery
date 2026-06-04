@@ -7,11 +7,7 @@
 <title>Sharvi – Premium Resin Jewellery</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
 <style>
 :root {
@@ -22,94 +18,65 @@
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height:100%; background:var(--cream); font-family:'Jost',sans-serif; color:var(--text); overscroll-behavior:none; }
 #app { max-width:430px; margin:0 auto; min-height:100vh; background:var(--white); position:relative; overflow-x:hidden; box-shadow: 0 0 40px rgba(0,0,0,0.05); }
+
 .page { display:none; min-height:100vh; padding-bottom:90px; }
 .page.active { display:block; animation: fadeUp 0.4s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+
 .btn-primary { width:100%; padding:15px; background:linear-gradient(135deg, var(--rose), var(--rose-dark)); color:#fff; border:none; border-radius:50px; font-family:'Jost',sans-serif; font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 8px 25px rgba(201, 150, 122, 0.4); }
 .btn-outline { width:100%; padding:14px; background:transparent; color:var(--rose-dark); border:1.5px solid var(--rose); border-radius:50px; font-family:'Jost',sans-serif; font-size:15px; font-weight:600; cursor:pointer; }
-.form-group { margin-bottom:15px; }
-.form-input { width:100%; padding:14px 16px; border-radius:12px; border:1.5px solid var(--rose-light); background:var(--rose-pale); font-family:'Jost',sans-serif; font-size:14px; outline:none; }
-.auth-wrapper { padding: 40px 20px; display:flex; flex-direction:column; justify-content:center; min-height:100vh; background:linear-gradient(160deg, #fdf8f5 0%, #faf4f1 100%); }
-.auth-header { text-align:center; margin-bottom:30px; }
-.auth-header h1 { font-family:'Cormorant Garamond',serif; font-size:42px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px;}
-.auth-tabs { display:flex; background:var(--rose-pale); border-radius:50px; padding:4px; margin-bottom:24px; }
-.auth-tab { flex:1; text-align:center; padding:12px; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-light); }
-.auth-tab.active { background:var(--white); color:var(--rose); box-shadow:var(--shadow); }
+
+.auth-wrapper { padding: 40px 20px; display:flex; flex-direction:column; justify-content:center; min-height:100vh; background:linear-gradient(160deg, #fdf8f5 0%, #faf4f1 100%); text-align: center; }
+.auth-header h1 { font-family:'Cormorant Garamond',serif; font-size:48px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px;}
+
 .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:rgba(255,255,255,0.98); border-top:1px solid var(--rose-light); display:none; justify-content:space-around; align-items:center; padding:12px 0 20px; z-index:100; }
 .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
-.nav-item svg { width:24px; height:24px; stroke:var(--text-light); }
-.nav-item span { font-size:10px; color:var(--text-light); }
-.nav-item.active svg { stroke:var(--rose); }
+.nav-item span { font-size:10px; color:var(--text-light); font-weight:500; }
 .nav-item.active span { color:var(--rose); }
+
 .page-header { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 15px; position:sticky; top:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); z-index:50; border-bottom:1px solid var(--rose-pale);}
 .page-header h2 { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:var(--text); }
 .product-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:20px; }
 .product-card { background:var(--white); border-radius:var(--radius); padding:15px; border:1px solid var(--rose-pale); text-align:center; }
+
 .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(44, 33, 29, 0.95); color:#fff; padding:14px 24px; border-radius:50px; font-size:13px; opacity:0; transition:all 0.3s; pointer-events:none; z-index:999; }
 .toast.show { opacity:1; }
 </style>
 </head>
 <body>
+
+<form name="sharvi_orders" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="text" name="customer_name" id="form_name">
+  <input type="email" name="customer_email" id="form_email">
+  <input type="text" name="product_ordered" id="form_product">
+  <input type="text" name="amount" id="form_amount">
+</form>
+
 <div id="app">
 
   <div id="auth-page" class="page active">
     <div class="auth-wrapper">
       <div class="auth-header">
         <h1>Sharvi</h1>
-        <p style="color:var(--text-light); font-size:14px;">Handcrafted Resin Magic</p>
+        <p style="color:var(--text-light); font-size:16px; margin-bottom: 40px;">Handcrafted Resin Magic</p>
       </div>
-
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</div>
-        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</div>
-      </div>
-
-      <div id="form-login">
-        <div class="form-group"><input class="form-input" type="email" id="login-email" placeholder="Email Address"></div>
-        <div class="form-group"><input class="form-input" type="password" id="login-pass" placeholder="Password"></div>
-        <button class="btn-primary" onclick="doLogin()">Secure Login</button>
-      </div>
-
-      <div id="form-register" style="display:none;">
-        <div id="step-1-register">
-          <div class="form-group"><input class="form-input" type="text" id="reg-name" placeholder="Full Name"></div>
-          <div class="form-group"><input class="form-input" type="email" id="reg-email" placeholder="Email Address"></div>
-          <div class="form-group"><input class="form-input" type="password" id="reg-pass" placeholder="Create Password"></div>
-          <button class="btn-primary" onclick="sendEmailOTP()">Send Email OTP</button>
-        </div>
-        
-        <div id="step-2-otp" style="display:none; text-align:center;">
-          <p style="margin-bottom:15px; font-size:14px; color:var(--text-light);">We've sent an OTP to your email.</p>
-          <div class="form-group"><input class="form-input" type="text" id="reg-otp" placeholder="Enter 6-digit OTP" style="text-align:center; letter-spacing:5px; font-weight:bold; font-size:18px;"></div>
-          <button class="btn-primary" onclick="verifyOTPAndRegister()">Verify & Create Account</button>
-          <p style="margin-top:15px; font-size:12px; color:var(--rose); cursor:pointer;" onclick="location.reload()">← Change Details</p>
-        </div>
-      </div>
+      
+      <button class="btn-primary" onclick="netlifyIdentity.open()">Login / Register to Shop</button>
+      <p style="margin-top:20px; font-size:13px; color:var(--text-light);">Secure authentication powered by Netlify</p>
     </div>
   </div>
 
   <div id="home-page" class="page">
     <div class="page-header">
       <h2 style="font-family:'Cormorant Garamond'; font-size:30px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Sharvi</h2>
-      <button style="border:none; background:none; font-size:20px;" onclick="showToast('Cart Loading...')">🛒</button>
     </div>
     <div style="padding:20px;">
       <h3>Exquisite Resin Collection</h3>
-      <p style="color:var(--text-light); font-size:14px; margin-top:5px;">Select your premium handmade pieces below:</p>
+      <p style="color:var(--text-light); font-size:14px; margin-top:5px;">Click below to place a direct order:</p>
     </div>
     <div class="product-grid">
-      <div class="product-card" onclick="placeRealOrder('Rose Ring', 499)">🌸<br><b>Rose Ring</b><br>₹499<br><br><button class="btn-primary" style="padding:5px; font-size:12px;">Order Now</button></div>
-      <div class="product-card" onclick="placeRealOrder('Ocean Pendant', 699)">🌊<br><b>Ocean Pendant</b><br>₹699<br><br><button class="btn-primary" style="padding:5px; font-size:12px;">Order Now</button></div>
-    </div>
-  </div>
-
-  <div id="about-page" class="page">
-    <div class="page-header"><h2>About Us</h2></div>
-    <div style="padding:30px 20px; text-align:center;">
-      <h1 style="font-family:'Cormorant Garamond'; font-size:36px; color:var(--rose-dark); margin-bottom:15px;">Our Story</h1>
-      <p style="color:var(--text-light); line-height:1.6; font-size:15px;">
-        Sharvi designs bespoke luxury resin items using authentic materials, bringing high-end craft directly to our esteemed clients across India.
-      </p>
+      <div class="product-card">🌸<br><b>Rose Ring</b><br>₹499<br><br><button class="btn-primary" style="padding:5px; font-size:12px;" onclick="placeOrder('Rose Ring', '499')">Buy Now</button></div>
+      <div class="product-card">🌊<br><b>Ocean Pendant</b><br>₹699<br><br><button class="btn-primary" style="padding:5px; font-size:12px;" onclick="placeOrder('Ocean Pendant', '699')">Buy Now</button></div>
     </div>
   </div>
 
@@ -117,15 +84,14 @@ html, body { height:100%; background:var(--cream); font-family:'Jost',sans-serif
     <div class="page-header"><h2>My Profile</h2></div>
     <div style="padding:30px 20px; text-align:center;">
       <div style="font-size:60px; margin-bottom:10px;">👤</div>
-      <h3 id="display-name" style="font-family:'Cormorant Garamond'; font-size:28px;">Loading...</h3>
-      <p id="display-email" style="color:var(--text-light); font-size:14px; margin-bottom:30px;">Loading...</p>
-      <button class="btn-outline" style="border-color:#e57373; color:#e57373;" onclick="doLogout()">Logout</button>
+      <h3 id="display-name" style="font-family:'Cormorant Garamond'; font-size:28px;">Customer</h3>
+      <p id="display-email" style="color:var(--text-light); font-size:14px; margin-bottom:30px;">email</p>
+      <button class="btn-outline" style="border-color:#e57373; color:#e57373;" onclick="netlifyIdentity.logout()">Logout</button>
     </div>
   </div>
 
   <nav class="bottom-nav" id="main-nav">
     <div class="nav-item active" onclick="showPage('home-page', this)"><span>Home</span></div>
-    <div class="nav-item" onclick="showPage('about-page', this)"><span>About Us</span></div>
     <div class="nav-item" onclick="showPage('profile-page', this)"><span>Profile</span></div>
   </nav>
 
@@ -134,148 +100,67 @@ html, body { height:100%; background:var(--cream); font-family:'Jost',sans-serif
 <div class="toast" id="toast"></div>
 
 <script>
-// ==========================================
-// 1. paste your firebase credentials here
-// ==========================================
-const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_ID",
-  appId: "YOUR_APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+let currentUser = null;
 
-// ==========================================
-// 2. paste your emailjs credentials here
-// ==========================================
-// Go to emailjs.com -> Account -> API Keys
-emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); 
+// Initialize Netlify Identity
+if (window.netlifyIdentity) {
+  window.netlifyIdentity.on("init", user => {
+    if (!user) {
+      window.netlifyIdentity.on("login", () => { document.location.href = "/"; });
+    } else {
+      handleUserLogin(user);
+    }
+  });
 
-let generatedOTP = "";
+  window.netlifyIdentity.on("login", user => {
+    handleUserLogin(user);
+    netlifyIdentity.close();
+  });
 
-// Auth Status Listener
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    document.getElementById('main-nav').style.display = 'flex';
-    document.getElementById('display-name').innerText = user.displayName || "Valued Customer";
-    document.getElementById('display-email').innerText = user.email;
-    showPage('home-page');
-  } else {
+  window.netlifyIdentity.on("logout", () => {
+    currentUser = null;
     document.getElementById('main-nav').style.display = 'none';
     showPage('auth-page');
-  }
-});
-
-function switchAuthTab(tab) {
-  document.getElementById('tab-login').classList.toggle('active', tab==='login');
-  document.getElementById('tab-register').classList.toggle('active', tab==='register');
-  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
+    showToast("Logged out successfully");
+  });
 }
 
-// Send Real Email OTP using EmailJS
-function sendEmailOTP() {
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  if(!name || !email) { showToast("Please fill all details"); return; }
-
-  // Generate 6 Digit Code
-  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // EmailJS configuration variables mapped to your template
-  const templateParams = {
-    to_name: name,
-    to_email: email,
-    otp_code: generatedOTP
-  };
-
-  showToast("Sending OTP...");
-
-  // Send through EmailJS (Connects your Brevo SMTP server securely behind the scenes)
-  emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_TEMPLATE_ID', templateParams)
-    .then(() => {
-      document.getElementById('step-1-register').style.display = 'none';
-      document.getElementById('step-2-otp').style.display = 'block';
-      showToast("OTP sent successfully to email! 📬");
-    }, (err) => {
-      showToast("Failed to send email. Check EmailJS setup.");
-      console.log(err);
-    });
-}
-
-// Verify OTP and Save User in Firebase Authentication Database
-function verifyOTPAndRegister() {
-  const enteredOtp = document.getElementById('reg-otp').value;
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-pass').value;
-
-  if(enteredOtp !== generatedOTP) { showToast("Invalid OTP code!"); return; }
-
-  showToast("Creating Secure Account...");
+function handleUserLogin(user) {
+  currentUser = user;
+  document.getElementById('main-nav').style.display = 'flex';
   
-  auth.createUserWithEmailAndPassword(email, password)
-    .then((result) => {
-      return result.user.updateProfile({ displayName: name });
-    })
-    .then(() => {
-      showToast("Registration Complete! Welcome 🎉");
-    })
-    .catch((error) => {
-      showToast(error.message);
-    });
+  // Set Profile Details
+  document.getElementById('display-name').innerText = user.user_metadata.full_name || "Valued Customer";
+  document.getElementById('display-email').innerText = user.email;
+  
+  showPage('home-page');
+  showToast("Welcome to Sharvi! 🎉");
 }
 
-// Login from Cloud Auth
-function doLogin() {
-  const email = document.getElementById('login-email').value;
-  const pass = document.getElementById('login-pass').value;
-  if(!email || !pass) { showToast("Enter email and password"); return; }
+function placeOrder(productName, price) {
+  if(!currentUser) {
+    showToast("Please login first!");
+    return;
+  }
 
-  showToast("Verifying Credentials...");
-  auth.signInWithEmailAndPassword(email, pass)
-    .then(() => {
-      showToast("Logged in successfully!");
-    })
-    .catch((error) => {
-      showToast(error.message);
-    });
-}
+  showToast("Sending Order...");
 
-// Logout System
-function doLogout() {
-  auth.signOut().then(() => { showToast("Logged out successfully"); });
-}
+  // Fill the hidden form with real data
+  const formData = new FormData();
+  formData.append("form-name", "sharvi_orders");
+  formData.append("customer_name", currentUser.user_metadata.full_name || "Customer");
+  formData.append("customer_email", currentUser.email);
+  formData.append("product_ordered", productName);
+  formData.append("amount", price);
 
-// PLACE REAL TIME ORDERS IN CLOUD FIRESTORE DATABASE
-function placeRealOrder(itemName, price) {
-  const user = auth.currentUser;
-  if(!user) { showToast("Please login first"); return; }
-
-  showToast("Processing Order...");
-
-  const orderData = {
-    customerName: user.displayName || "Walk-in User",
-    customerEmail: user.email,
-    uid: user.uid,
-    productName: itemName,
-    amountPaid: price,
-    orderDate: new Date().toLocaleString("en-IN"),
-    orderStatus: "Pending / Confirmed"
-  };
-
-  // Push straight to Cloud Firestore 'orders' collection
-  db.collection("orders").add(orderData)
-    .then(() => {
-      showToast(`Order Placed for ${itemName}! 🎉 Check Dashboard.`);
-    })
-    .catch((err) => {
-      showToast("Database error: " + err.message);
-    });
+  // Send the form data to Netlify silently via JS
+  fetch("/", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(formData).toString()
+  })
+  .then(() => showToast(`Order Confirmed for ${productName}! ✅`))
+  .catch((error) => showToast("Order failed. Please try again."));
 }
 
 function showPage(pageId, navElement = null) {
@@ -293,757 +178,6 @@ function showToast(msg) {
   t.innerText = msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 2500);
 }
-</script>
-</body>
-</html>.auth-tab { flex:1; text-align:center; padding:12px; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-light); transition:all 0.3s; }
-.auth-tab.active { background:var(--white); color:var(--rose); box-shadow:var(--shadow); }
-
-/* BOTTOM NAV (HIDDEN INITIALLY) */
-.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:rgba(255,255,255,0.98); border-top:1px solid var(--rose-light); display:none; justify-content:space-around; align-items:center; padding:12px 0 20px; z-index:100; }
-.nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
-.nav-item svg { width:24px; height:24px; stroke:var(--text-light); }
-.nav-item span { font-size:10px; color:var(--text-light); font-weight:500; }
-.nav-item.active svg { stroke:var(--rose); }
-.nav-item.active span { color:var(--rose); }
-
-/* HEADER */
-.page-header { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 15px; position:sticky; top:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); z-index:50; border-bottom:1px solid var(--rose-pale);}
-.page-header h2 { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:var(--text); }
-.back-btn { width:40px; height:40px; border-radius:50%; background:var(--white); border:1px solid var(--rose-pale); cursor:pointer; display:flex; align-items:center; justify-content:center; }
-
-/* SIMPLE GRID */
-.product-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:20px; }
-.product-card { background:var(--white); border-radius:var(--radius); padding:15px; border:1px solid var(--rose-pale); text-align:center; }
-
-/* TOAST */
-.toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(44, 33, 29, 0.95); color:#fff; padding:14px 24px; border-radius:50px; font-size:13px; opacity:0; transition:all 0.3s; pointer-events:none; z-index:999; }
-.toast.show { opacity:1; }
-</style>
-</head>
-<body>
-<div id="app">
-
-<div id="auth-page" class="page active">
-  <div class="auth-wrapper">
-    <div class="auth-header">
-      <h1>Sharvi</h1>
-      <p style="color:var(--text-light); font-size:14px;">Handcrafted Resin Magic</p>
-    </div>
-
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</div>
-      <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</div>
-    </div>
-
-    <div id="form-login">
-      <div class="form-group"><input class="form-input" type="email" id="login-email" placeholder="Email Address"></div>
-      <div class="form-group"><input class="form-input" type="password" id="login-pass" placeholder="Password"></div>
-      <button class="btn-primary" onclick="doLogin()">Secure Login</button>
-    </div>
-
-    <div id="form-register" style="display:none;">
-      <div id="step-1-register">
-        <div class="form-group"><input class="form-input" type="text" id="reg-name" placeholder="Full Name"></div>
-        <div class="form-group"><input class="form-input" type="email" id="reg-email" placeholder="Email Address"></div>
-        <div class="form-group"><input class="form-input" type="password" id="reg-pass" placeholder="Create Password"></div>
-        <button class="btn-primary" onclick="requestOTP()">Send OTP</button>
-      </div>
-      
-      <div id="step-2-otp" style="display:none; text-align:center;">
-        <p style="margin-bottom:15px; font-size:14px; color:var(--text-light);">We've sent an OTP to your email.</p>
-        <div class="form-group"><input class="form-input" type="text" id="reg-otp" placeholder="Enter 6-digit OTP" style="text-align:center; letter-spacing:5px; font-weight:bold; font-size:18px;"></div>
-        <button class="btn-primary" onclick="verifyOTPAndRegister()">Verify & Create Account</button>
-        <p style="margin-top:15px; font-size:12px; color:var(--rose); cursor:pointer;" onclick="location.reload()">← Change Email</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="home-page" class="page">
-  <div class="page-header">
-    <h2 style="font-family:'Cormorant Garamond'; font-size:30px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Sharvi</h2>
-    <button class="back-btn" onclick="showToast('Added to cart')">🛒</button>
-  </div>
-  <div style="padding:20px;">
-    <h3>Welcome to the Store!</h3>
-    <p style="color:var(--text-light); font-size:14px; margin-top:5px;">You are successfully logged in.</p>
-  </div>
-  <div class="product-grid">
-    <div class="product-card">🌸<br><b>Rose Ring</b><br>₹499</div>
-    <div class="product-card">🌊<br><b>Ocean Pendant</b><br>₹699</div>
-  </div>
-</div>
-
-<div id="about-page" class="page">
-  <div class="page-header">
-    <h2>About Us</h2>
-  </div>
-  <div style="padding:30px 20px; text-align:center;">
-    <h1 style="font-family:'Cormorant Garamond'; font-size:36px; color:var(--rose-dark); margin-bottom:15px;">Our Story</h1>
-    <p style="color:var(--text-light); line-height:1.6; font-size:15px; margin-bottom:20px;">
-      Welcome to Sharvi! We craft premium, handmade resin jewellery. Every piece is unique, made with real dried flowers, gold flakes, and love. Our mission is to provide you with affordable luxury that stands out.
-    </p>
-    <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=400&q=80" style="width:100%; border-radius:var(--radius); margin-bottom:20px;">
-  </div>
-</div>
-
-<div id="profile-page" class="page">
-  <div class="page-header"><h2>My Profile</h2></div>
-  <div style="padding:30px 20px; text-align:center;">
-    <div style="font-size:60px; margin-bottom:10px;">👤</div>
-    <h3 id="display-name" style="font-family:'Cormorant Garamond'; font-size:28px;">Customer</h3>
-    <p id="display-email" style="color:var(--text-light); font-size:14px; margin-bottom:30px;">email@example.com</p>
-    
-    <div style="text-align:left; background:var(--rose-pale); border-radius:12px; padding:20px; margin-bottom:20px;">
-      <p style="padding:10px 0; border-bottom:1px solid #e0c8bc; font-weight:500;">📦 My Orders</p>
-      <p style="padding:10px 0; border-bottom:1px solid #e0c8bc; font-weight:500;">❤️ Wishlist</p>
-      <p style="padding:10px 0; font-weight:500;">📍 Saved Addresses</p>
-    </div>
-
-    <button class="btn-outline" style="border-color:#e57373; color:#e57373;" onclick="doLogout()">Logout</button>
-  </div>
-</div>
-
-<nav class="bottom-nav" id="main-nav">
-  <div class="nav-item active" onclick="showPage('home-page', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>Home</span>
-  </div>
-  <div class="nav-item" onclick="showPage('about-page', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-    <span>About Us</span>
-  </div>
-  <div class="nav-item" onclick="showPage('profile-page', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Profile</span>
-  </div>
-</nav>
-
-<div class="toast" id="toast"></div>
-
-<script>
-let currentUser = JSON.parse(localStorage.getItem('sharvi_user') || 'null');
-let tempOTP = "123456"; // SIMULATED OTP FOR FRONTEND
-
-// On Load check if logged in
-window.onload = () => {
-  if(currentUser) {
-    document.getElementById('main-nav').style.display = 'flex';
-    showPage('home-page');
-    updateProfileUI();
-  } else {
-    document.getElementById('main-nav').style.display = 'none';
-    showPage('auth-page');
-  }
-}
-
-function switchAuthTab(tab) {
-  document.getElementById('tab-login').classList.toggle('active', tab==='login');
-  document.getElementById('tab-register').classList.toggle('active', tab==='register');
-  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
-}
-
-function requestOTP() {
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  if(!name || !email) { showToast("Fill all details"); return; }
-  
-  // REALITY: Here you will make a FETCH request to your Netlify Function to send the Brevo email.
-  // Example: fetch('/.netlify/functions/send-otp', { method: 'POST', body: JSON.stringify({email}) })
-  
-  document.getElementById('step-1-register').style.display = 'none';
-  document.getElementById('step-2-otp').style.display = 'block';
-  showToast("OTP Sent! (For testing, enter 123456)");
-}
-
-function verifyOTPAndRegister() {
-  const otp = document.getElementById('reg-otp').value;
-  if(otp !== tempOTP) { showToast("Invalid OTP"); return; }
-  
-  const user = { 
-    name: document.getElementById('reg-name').value, 
-    email: document.getElementById('reg-email').value 
-  };
-  localStorage.setItem('sharvi_user', JSON.stringify(user));
-  currentUser = user;
-  
-  showToast("Account Created!");
-  document.getElementById('main-nav').style.display = 'flex';
-  updateProfileUI();
-  showPage('home-page');
-}
-
-function doLogin() {
-  const email = document.getElementById('login-email').value;
-  if(!email) { showToast("Enter email"); return; }
-  
-  // Fake login for demonstration
-  currentUser = { name: "Sharvi User", email: email };
-  localStorage.setItem('sharvi_user', JSON.stringify(currentUser));
-  
-  document.getElementById('main-nav').style.display = 'flex';
-  updateProfileUI();
-  showPage('home-page');
-  showToast("Welcome back!");
-}
-
-function doLogout() {
-  localStorage.removeItem('sharvi_user');
-  currentUser = null;
-  document.getElementById('main-nav').style.display = 'none';
-  showPage('auth-page');
-  switchAuthTab('login');
-}
-
-function updateProfileUI() {
-  if(currentUser) {
-    document.getElementById('display-name').innerText = currentUser.name;
-    document.getElementById('display-email').innerText = currentUser.email;
-  }
-}
-
-function showPage(pageId, navElement = null) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-  
-  if(navElement) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    navElement.classList.add('active');
-  } else if (pageId === 'home-page') {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelectorAll('.nav-item')[0].classList.add('active');
-  }
-  window.scrollTo(0,0);
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.innerText = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
-}
-</script>
-</body>
-</html>@keyframes fadeUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
-
-/* BOTTOM NAV */
-.bottom-nav {
-  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
-  width:100%; max-width:430px;
-  background:rgba(255,255,255,0.98);
-  backdrop-filter:blur(15px);
-  border-top:1px solid rgba(240, 216, 204, 0.5);
-  display:flex; justify-content:space-around; align-items:center;
-  padding:12px 0 20px; z-index:100;
-}
-.nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; position:relative; }
-.nav-item svg { width:24px; height:24px; stroke:var(--text-light); transition:all 0.3s; }
-.nav-item span { font-size:10px; color:var(--text-light); font-weight:500; letter-spacing:0.5px; transition:all 0.3s; }
-.nav-item.active svg { stroke:var(--rose); transform:translateY(-2px); }
-.nav-item.active span { color:var(--rose); }
-.cart-badge {
-  position:absolute; top:-5px; right:-8px;
-  background:var(--rose-dark); color:#fff;
-  border-radius:50%; width:18px; height:18px;
-  font-size:10px; display:flex; align-items:center; justify-content:center;
-  font-weight:600; display:none; border:2px solid #fff;
-}
-.cart-badge.show { display:flex; }
-
-/* HEADER */
-.page-header {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:20px 20px 15px;
-  position:sticky; top:0; background:rgba(253,248,245,0.95);
-  backdrop-filter:blur(10px); z-index:50;
-}
-.page-header h2 { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:var(--text); }
-.back-btn { width:40px; height:40px; border-radius:50%; background:var(--white); border:1px solid var(--rose-pale); cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); transition:transform 0.2s; }
-.back-btn:active { transform:scale(0.95); }
-.back-btn svg { width:20px; height:20px; stroke:var(--rose-dark); }
-
-/* BUTTONS */
-.btn-primary {
-  width:100%; padding:16px; background:linear-gradient(135deg, var(--rose), var(--rose-dark));
-  color:#fff; border:none; border-radius:50px; font-family:'Jost',sans-serif;
-  font-size:15px; font-weight:600; letter-spacing:1px; cursor:pointer;
-  transition:all 0.3s; box-shadow:0 8px 25px rgba(201, 150, 122, 0.4);
-}
-.btn-primary:active { transform:scale(0.98); box-shadow:0 4px 15px rgba(201, 150, 122, 0.4); }
-.btn-outline {
-  width:100%; padding:15px; background:transparent;
-  color:var(--rose-dark); border:1.5px solid var(--rose); border-radius:50px;
-  font-family:'Jost',sans-serif; font-size:15px; font-weight:600;
-  letter-spacing:1px; cursor:pointer; transition:all 0.3s;
-}
-
-/* HOME */
-.hero { padding: 0 0 30px; position:relative; overflow:hidden; }
-.hero-top { display:flex; justify-content:space-between; align-items:center; padding:20px 20px 10px; }
-.logo-name {
-  font-family:'Cormorant Garamond',serif;
-  font-size:38px; font-weight:600;
-  background:linear-gradient(135deg, #a87560, #d4a96a);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  letter-spacing:1px; line-height:1;
-}
-.hero-banner {
-  margin:15px 20px 0;
-  background:url('https://images.unsplash.com/photo-1599643478514-4a42095213e1?auto=format&fit=crop&w=600&q=80') center/cover;
-  border-radius:24px; padding:30px 20px; position:relative; overflow:hidden;
-  box-shadow:var(--shadow-lg); height: 180px; display: flex; flex-direction: column; justify-content: center;
-}
-.hero-banner::before {
-  content:''; position:absolute; top:0; left:0; width:100%; height:100%;
-  background:linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
-}
-.hero-banner-content { position: relative; z-index: 2; }
-.hero-banner-label { font-size:10px; color:var(--gold); letter-spacing:3px; text-transform:uppercase; font-weight: 600; }
-.hero-banner h1 { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:400; color:#fff; line-height:1.2; margin:8px 0 16px; }
-.hero-banner-btn { background:#fff; color:var(--text); border:none; border-radius:50px; padding:10px 24px; font-family:'Jost',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; cursor:pointer; }
-
-.section-label { padding:25px 20px 15px; display:flex; justify-content:space-between; align-items:center; }
-.section-label h3 { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; }
-.section-label a { font-size:13px; color:var(--rose-dark); text-decoration:none; font-weight:500; cursor:pointer; }
-
-/* PRODUCT GRID */
-.product-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 20px 20px; }
-.product-card { background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); cursor:pointer; transition:transform 0.2s; position: relative; }
-.product-card:active { transform:scale(0.97); }
-.product-img { width:100%; aspect-ratio:4/5; position:relative; overflow:hidden; background:var(--rose-pale); }
-.product-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.5s; }
-.product-card:hover .product-img img { transform:scale(1.05); }
-.product-badge { position:absolute; top:10px; left:10px; background:rgba(255,255,255,0.9); color:var(--rose-dark); font-size:9px; font-weight:700; letter-spacing:1px; padding:4px 10px; border-radius:50px; text-transform:uppercase; backdrop-filter: blur(4px); }
-.wish-btn { position:absolute; top:10px; right:10px; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.9); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-.wish-btn svg { width:16px; height:16px; stroke:var(--rose); }
-.wish-btn.loved svg { fill:var(--rose); }
-.product-info { padding:14px; }
-.product-name { font-size:14px; font-weight:500; color:var(--text); line-height:1.3; margin-bottom:4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.product-sub { font-size:12px; color:var(--text-light); margin-bottom:10px; }
-.product-price-row { display:flex; align-items:center; justify-content:space-between; }
-.product-price { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; color:var(--rose-dark); }
-.product-mrp { font-size:12px; color:#bbaaa3; text-decoration:line-through; margin-left:4px; }
-.add-btn { width:30px; height:30px; border-radius:50%; background:var(--rose-pale); border:none; cursor:pointer; color:var(--rose-dark); font-size:18px; display:flex; align-items:center; justify-content:center; transition: background 0.3s; }
-.add-btn:active { background:var(--rose); color:#fff; }
-
-/* CATEGORY SCROLL */
-.cat-scroll { display:flex; gap:12px; padding:0 20px; overflow-x:auto; scrollbar-width:none; }
-.cat-scroll::-webkit-scrollbar { display:none; }
-.cat-pill { flex-shrink:0; padding:10px 20px; border-radius:50px; background:var(--white); border:1px solid var(--rose-light); font-size:13px; font-weight:500; color:var(--text-light); cursor:pointer; transition:all 0.3s; box-shadow:var(--shadow); }
-.cat-pill.active { background:var(--rose); border-color:var(--rose); color:#fff; }
-
-/* DETAIL PAGE */
-.detail-img-area { width:100%; height:400px; background:var(--rose-pale); position:relative; }
-.detail-img-area img { width:100%; height:100%; object-fit:cover; }
-.detail-body { padding:24px 20px; background:var(--white); border-radius:30px 30px 0 0; margin-top:-30px; position:relative; z-index:10; box-shadow: 0 -10px 20px rgba(0,0,0,0.03); }
-.detail-category { font-size:11px; color:var(--rose); font-weight:600; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
-.detail-name { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; line-height:1.2; margin-bottom:12px; }
-.detail-price-row { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom: 20px; border-bottom: 1px solid var(--rose-pale); }
-.detail-price { font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:600; color:var(--rose-dark); }
-.detail-discount { background:#e8f5e9; color:#2e7d32; font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; }
-.detail-desc { font-size:15px; color:var(--text-light); line-height:1.7; margin-bottom:24px; }
-.qty-control { display:flex; align-items:center; justify-content:space-between; background:var(--rose-pale); border-radius:50px; padding:6px 6px; width: 140px; margin-bottom: 24px; }
-.qty-btn { width:36px; height:36px; border-radius:50%; background:var(--white); border:none; cursor:pointer; font-size:20px; color:var(--text); display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-.qty-num { font-family:'Jost',sans-serif; font-size:16px; font-weight:600; width:30px; text-align:center; }
-.detail-actions { display:flex; gap:12px; padding-bottom:20px; }
-
-/* CART ITEM */
-.cart-item { display:flex; gap:16px; padding:20px; border-bottom:1px solid var(--rose-pale); align-items:center; background: #fff; margin: 10px 20px; border-radius: var(--radius); box-shadow: var(--shadow); }
-.cart-item-img { width:80px; height:80px; border-radius:12px; overflow:hidden; flex-shrink:0; }
-.cart-item-img img { width:100%; height:100%; object-fit:cover; }
-.cart-item-info { flex:1; }
-
-.toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:rgba(44, 33, 29, 0.95); color:#fff; padding:14px 24px; border-radius:50px; font-size:13px; font-weight:500; white-space:nowrap; opacity:0; transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index:999; box-shadow: var(--shadow-lg); pointer-events:none; }
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* Simple utility */
-.empty-state { text-align:center; padding:60px 30px; }
-.empty-state img { width: 120px; opacity: 0.5; margin-bottom: 20px; }
-</style>
-</head>
-<body>
-<div id="app">
-
-<div id="home-page" class="page active">
-  <div class="hero">
-    <div class="hero-top">
-      <div class="logo-name">Sharvi</div>
-      <button class="icon-btn back-btn" onclick="showPage('cart-page')" style="width:45px; height:45px; border:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        <span class="cart-badge" id="hero-cart-badge">0</span>
-      </button>
-    </div>
-    <div class="hero-banner" onclick="showPage('shop-page')">
-      <div class="hero-banner-content">
-        <div class="hero-banner-label">New Collection</div>
-        <h1>Handcrafted<br>Resin Magic</h1>
-        <button class="hero-banner-btn">Explore Now</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="cat-scroll">
-    <div class="cat-pill active" onclick="filterCat(this,'all')">All</div>
-    <div class="cat-pill" onclick="filterCat(this,'earrings')">Earrings</div>
-    <div class="cat-pill" onclick="filterCat(this,'necklace')">Necklaces</div>
-    <div class="cat-pill" onclick="filterCat(this,'bracelet')">Bracelets</div>
-    <div class="cat-pill" onclick="filterCat(this,'ring')">Rings</div>
-  </div>
-
-  <div class="section-label">
-    <h3>Trending Now</h3>
-    <a onclick="showPage('shop-page')">View All</a>
-  </div>
-  <div class="product-grid" id="home-grid"></div>
-</div>
-
-<div id="shop-page" class="page">
-  <div class="page-header">
-    <button class="back-btn" onclick="showPage('home-page')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <h2>Shop Collection</h2>
-    <div style="width:40px;"></div>
-  </div>
-  <div style="height:10px;"></div>
-  <div class="cat-scroll" id="shop-filters" style="padding-bottom: 20px;">
-    <div class="cat-pill active" onclick="shopFilter(this,'all')">All</div>
-    <div class="cat-pill" onclick="shopFilter(this,'earrings')">Earrings</div>
-    <div class="cat-pill" onclick="shopFilter(this,'necklace')">Necklaces</div>
-    <div class="cat-pill" onclick="shopFilter(this,'bracelet')">Bracelets</div>
-  </div>
-  <div class="product-grid" id="shop-grid"></div>
-</div>
-
-<div id="detail-page" class="page">
-  <div class="page-header" style="position: absolute; width: 100%; background: transparent; backdrop-filter: none; border: none;">
-    <button class="back-btn" id="detail-back-btn" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(5px);">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <button class="back-btn" onclick="toggleWish()" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(5px);">
-      <svg id="detail-wish-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--rose);"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    </button>
-  </div>
-  <div id="detail-content"></div>
-</div>
-
-<div id="cart-page" class="page">
-  <div class="page-header">
-    <button class="back-btn" onclick="showPage('home-page')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <h2>Shopping Cart</h2>
-    <div style="width:40px;"></div>
-  </div>
-  <div id="cart-content"></div>
-</div>
-
-<div id="wishlist-page" class="page">
-  <div class="page-header">
-    <div style="width:40px;"></div>
-    <h2>My Wishlist</h2>
-    <div style="width:40px;"></div>
-  </div>
-  <div class="product-grid" id="wishlist-content" style="padding-top: 20px;"></div>
-</div>
-
-<nav class="bottom-nav">
-  <div class="nav-item active" id="nav-home" onclick="showPage('home-page')">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>Home</span>
-  </div>
-  <div class="nav-item" id="nav-shop" onclick="showPage('shop-page')">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-    <span>Shop</span>
-  </div>
-  <div class="nav-item" id="nav-wishlist" onclick="showPage('wishlist-page')">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    <span>Wishlist</span>
-  </div>
-  <div class="nav-item" id="nav-cart" onclick="showPage('cart-page')">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-    <span>Cart</span>
-    <span class="cart-badge" id="nav-cart-badge">0</span>
-  </div>
-</nav>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// PURE FRONTEND PRODUCTS WITH REALISTIC IMAGES
-const products = [
-  { id:1, name:'Ocean Swirl Pendant', sub:'Blue Resin & Silver', cat:'necklace', image:'https://images.unsplash.com/photo-1599643478514-4a42095213e1?auto=format&fit=crop&w=400&q=80', price:599, mrp:899, badge:'Bestseller', desc:'Deep blue swirls of resin come together to create this mesmerising ocean-inspired pendant. Paired with a delicate 18" silver chain.' },
-  { id:2, name:'Blush Petal Drop', sub:'Real Dried Flowers', cat:'earrings', image:'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=400&q=80', price:349, mrp:599, badge:'New', desc:'Handcrafted with premium resin and real dried blush petals. Extremely lightweight and perfect for your everyday aesthetic.' },
-  { id:3, name:'Crystal Clear Ring', sub:'Gold Flake Inclusions', cat:'ring', image:'https://images.unsplash.com/photo-1605100804763-247f67b2548e?auto=format&fit=crop&w=400&q=80', price:299, mrp:499, badge:'', desc:'A minimalist chunky clear resin ring infused with authentic 24k gold leaf flakes. Polished to a high glass-like shine.' },
-  { id:4, name:'Emerald Forest Bangle', sub:'Chunky Resin Bracelet', cat:'bracelet', image:'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=400&q=80', price:499, mrp:799, badge:'Sale', desc:'Rich emerald green tones blended in a thick, statement resin bangle. Perfect for stacking or wearing as a solo statement piece.' },
-  { id:5, name:'Amber Glow Drops', sub:'Warm Minimalist', cat:'earrings', image:'https://images.unsplash.com/photo-1633511195741-f203875dc9d5?auto=format&fit=crop&w=400&q=80', price:399, mrp:650, badge:'', desc:'Sleek amber-colored resin teardrops set on hypoallergenic gold-plated hooks. Catches the light beautifully.' },
-  { id:6, name:'Midnight Galaxy Choker', sub:'Dark Resin & Glitter', cat:'necklace', image:'https://images.unsplash.com/photo-1602752250014-8f785f26db12?auto=format&fit=crop&w=400&q=80', price:449, mrp:699, badge:'New', desc:'A stunning dark pendant filled with holographic glitter that mimics a starry night sky. Black velvet choker cord included.' }
-];
-
-// STATE MANAGEMENT
-let cart = JSON.parse(localStorage.getItem('sharvi_cart') || '[]');
-let wishlist = JSON.parse(localStorage.getItem('sharvi_wishlist') || '[]');
-let currentProduct = null;
-let currentQty = 1;
-let detailFromPage = 'home-page';
-let currentActiveFilter = 'all';
-
-function saveState() {
-  localStorage.setItem('sharvi_cart', JSON.stringify(cart));
-  localStorage.setItem('sharvi_wishlist', JSON.stringify(wishlist));
-  updateCartBadge();
-}
-
-// RENDER CARDS
-function productCard(p) {
-  const inWish = wishlist.includes(p.id);
-  return `<div class="product-card" onclick="openDetail(${p.id}, event)">
-    <div class="product-img">
-      <img src="${p.image}" alt="${p.name}" loading="lazy">
-      ${p.badge ? `<div class="product-badge">${p.badge}</div>` : ''}
-      <button class="wish-btn ${inWish?'loved':''}" onclick="toggleWishById(${p.id}, event)">
-        <svg viewBox="0 0 24 24" fill="${inWish?'var(--rose)':'none'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      </button>
-    </div>
-    <div class="product-info">
-      <div class="product-name">${p.name}</div>
-      <div class="product-sub">${p.sub}</div>
-      <div class="product-price-row">
-        <div>
-          <span class="product-price">₹${p.price}</span>
-          <span class="product-mrp">₹${p.mrp}</span>
-        </div>
-        <button class="add-btn" onclick="quickAdd(${p.id}, event)">+</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderHomeGrid() {
-  document.getElementById('home-grid').innerHTML = products.map(p => productCard(p)).join('');
-}
-
-function renderShopGrid(filter='all') {
-  const list = filter==='all' ? products : products.filter(p=>p.cat===filter);
-  document.getElementById('shop-grid').innerHTML = list.map(p=>productCard(p)).join('');
-}
-
-function renderWishlist() {
-  const el = document.getElementById('wishlist-content');
-  const list = products.filter(p=>wishlist.includes(p.id));
-  if(list.length === 0){
-    el.innerHTML = `<div class="empty-state">
-      <h3 style="font-family:'Cormorant Garamond',serif; font-size:24px; color:var(--text); margin-bottom:10px;">No Favorites Yet</h3>
-      <p style="color:var(--text-light); font-size:14px; margin-bottom:30px;">Tap the heart on any product to save it here!</p>
-      <button class="btn-outline" onclick="showPage('shop-page')">Explore Jewelry</button>
-    </div>`;
-  } else {
-    el.innerHTML = list.map(p=>productCard(p)).join('');
-  }
-}
-
-// FILTER LOGIC
-function filterCat(el, cat) {
-  document.querySelectorAll('.cat-scroll .cat-pill').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  showPage('shop-page');
-  const shopPills = document.querySelectorAll('#shop-filters .cat-pill');
-  shopPills.forEach(c => {
-    if(c.textContent.toLowerCase().includes(cat) || (cat==='all' && c.textContent==='All')) {
-      c.classList.add('active');
-    } else {
-      c.classList.remove('active');
-    }
-  });
-  renderShopGrid(cat);
-}
-
-function shopFilter(el, cat) {
-  document.querySelectorAll('#shop-filters .cat-pill').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  currentActiveFilter = cat;
-  renderShopGrid(cat);
-}
-
-// DETAILS LOGIC
-function openDetail(id, e) {
-  if(e) e.stopPropagation();
-  currentProduct = products.find(p=>p.id===id);
-  currentQty = 1;
-  detailFromPage = document.querySelector('.page.active').id;
-  
-  const inWish = wishlist.includes(id);
-  document.getElementById('detail-wish-icon').setAttribute('fill', inWish ? 'var(--rose)' : 'none');
-  
-  const disc = Math.round((currentProduct.mrp - currentProduct.price) / currentProduct.mrp * 100);
-  
-  document.getElementById('detail-content').innerHTML = `
-    <div class="detail-img-area">
-      <img src="${currentProduct.image}" alt="${currentProduct.name}">
-    </div>
-    <div class="detail-body">
-      <div class="detail-category">${currentProduct.cat}</div>
-      <div class="detail-name">${currentProduct.name}</div>
-      <div class="detail-price-row">
-        <div class="detail-price">₹${currentProduct.price}</div>
-        <div style="font-size:16px; color:#bbaaa3; text-decoration:line-through; margin-top:6px;">₹${currentProduct.mrp}</div>
-        <div class="detail-discount" style="margin-left:auto; margin-top:6px;">${disc}% OFF</div>
-      </div>
-      <div class="detail-desc">${currentProduct.desc}</div>
-      
-      <div style="font-size:13px; font-weight:600; color:var(--text-light); text-transform:uppercase; margin-bottom:10px; letter-spacing:1px;">Quantity</div>
-      <div class="qty-control">
-        <button class="qty-btn" onclick="changeQty(-1)">−</button>
-        <div class="qty-num" id="qty-display">1</div>
-        <button class="qty-btn" onclick="changeQty(1)">+</button>
-      </div>
-      
-      <div class="detail-actions">
-        <button class="btn-outline" style="flex:1;" onclick="addToCartFromDetail()">Add to Cart</button>
-        <button class="btn-primary" style="flex:1;" onclick="buyNow()">Buy Now</button>
-      </div>
-    </div>`;
-  
-  document.getElementById('detail-back-btn').onclick = () => showPage(detailFromPage);
-  showPage('detail-page');
-}
-
-function changeQty(d) {
-  currentQty = Math.max(1, currentQty + d);
-  document.getElementById('qty-display').textContent = currentQty;
-}
-
-// CART & WISHLIST LOGIC
-function toggleWishById(id, e) {
-  if(e) e.stopPropagation();
-  if(wishlist.includes(id)){
-    wishlist = wishlist.filter(w=>w!==id);
-    showToast('Removed from wishlist');
-  } else {
-    wishlist.push(id);
-    showToast('Saved to wishlist ❤️');
-  }
-  saveState();
-  renderHomeGrid();
-  renderShopGrid(currentActiveFilter);
-  renderWishlist();
-  if(currentProduct && currentProduct.id===id) {
-    document.getElementById('detail-wish-icon').setAttribute('fill', wishlist.includes(id) ? 'var(--rose)' : 'none');
-  }
-}
-function toggleWish() { toggleWishById(currentProduct.id); }
-
-function addToCart(id, qty=1) {
-  const existing = cart.find(i=>i.id===id);
-  if(existing) existing.qty += qty;
-  else cart.push({id, qty});
-  saveState();
-}
-
-function quickAdd(id, e) {
-  e.stopPropagation();
-  addToCart(id, 1);
-  showToast(`Added to cart 🛍️`);
-}
-
-function addToCartFromDetail() {
-  addToCart(currentProduct.id, currentQty);
-  showToast(`Added ${currentQty} to cart 🛍️`);
-}
-
-function buyNow() {
-  addToCart(currentProduct.id, currentQty);
-  showPage('cart-page');
-}
-
-function updateCartBadge() {
-  const total = cart.reduce((s,i)=>s+i.qty,0);
-  ['nav-cart-badge','hero-cart-badge'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){ el.textContent=total; el.classList.toggle('show', total>0); }
-  });
-}
-
-function renderCart() {
-  const el = document.getElementById('cart-content');
-  if(cart.length===0){
-    el.innerHTML=`<div class="empty-state">
-      <h3 style="font-family:'Cormorant Garamond',serif; font-size:24px; color:var(--text); margin-bottom:10px;">Your Cart is Empty</h3>
-      <p style="color:var(--text-light); font-size:14px; margin-bottom:30px;">Let's add some beautiful resin pieces to it!</p>
-      <button class="btn-primary" onclick="showPage('shop-page')">Start Shopping</button>
-    </div>`; return;
-  }
-  
-  const itemsHtml = cart.map(item=>{
-    const p = products.find(x=>x.id===item.id);
-    return `<div class="cart-item">
-      <div class="cart-item-img"><img src="${p.image}" alt="${p.name}"></div>
-      <div class="cart-item-info">
-        <div style="font-size:15px; font-weight:500; color:var(--text); margin-bottom:4px;">${p.name}</div>
-        <div style="font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; color:var(--rose-dark); margin-bottom:12px;">₹${p.price}</div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; background:var(--rose-pale); border-radius:50px; padding:2px;">
-            <button style="width:28px; height:28px; border-radius:50%; background:#fff; border:none; cursor:pointer; color:var(--text);" onclick="cartQty(${p.id},-1)">−</button>
-            <div style="font-weight:600; width:24px; text-align:center; font-size:13px;">${item.qty}</div>
-            <button style="width:28px; height:28px; border-radius:50%; background:#fff; border:none; cursor:pointer; color:var(--text);" onclick="cartQty(${p.id},1)">+</button>
-          </div>
-          <button style="border:none; background:none; color:#d88; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; cursor:pointer;" onclick="removeFromCart(${p.id})">Remove</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-  
-  const subtotal = cart.reduce((s,i)=>{ const p=products.find(x=>x.id===i.id); return s+(p?p.price*i.qty:0); },0);
-  const shipping = subtotal >= 999 ? 0 : 50;
-  
-  el.innerHTML = itemsHtml + `
-    <div style="margin:20px; background:#fff; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);">
-      <h4 style="font-family:'Cormorant Garamond',serif; font-size:20px; margin-bottom:16px;">Order Summary</h4>
-      <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-light); margin-bottom:12px;"><span>Subtotal</span><span>₹${subtotal}</span></div>
-      <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-light); margin-bottom:16px;"><span>Shipping</span><span>${shipping===0?'<span style="color:#2e7d32;font-weight:600;">FREE</span>':'₹'+shipping}</span></div>
-      <div style="border-top:1px dashed var(--rose-light); padding-top:16px; display:flex; justify-content:space-between; font-size:18px; font-weight:600; color:var(--text);"><span>Total</span><span>₹${subtotal+shipping}</span></div>
-    </div>
-    <div style="padding:0 20px 20px;">
-      <button class="btn-primary" onclick="showToast('Checkout flow is ready to be connected to a payment gateway!')">Proceed to Checkout</button>
-    </div>`;
-}
-
-function cartQty(id, d) {
-  const item = cart.find(i=>i.id===id);
-  if(item){ item.qty=Math.max(1,item.qty+d); saveState(); renderCart(); }
-}
-function removeFromCart(id) {
-  cart = cart.filter(i=>i.id!==id);
-  saveState(); renderCart(); showToast('Item removed');
-}
-
-// UI ROUTING & HELPERS
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  
-  const navMap = { 'home-page':'nav-home','shop-page':'nav-shop','wishlist-page':'nav-wishlist','cart-page':'nav-cart' };
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(navMap[id]) document.getElementById(navMap[id])?.classList.add('active');
-  
-  if(id==='cart-page') renderCart();
-  if(id==='shop-page') renderShopGrid(currentActiveFilter);
-  if(id==='wishlist-page') renderWishlist();
-  
-  window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
-}
-
-// INITIALIZE
-updateCartBadge();
-renderHomeGrid();
-renderShopGrid();
 </script>
 </body>
 </html>
