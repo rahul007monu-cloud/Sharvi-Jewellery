@@ -6,178 +6,314 @@
 <meta name="theme-color" content="#c9967a">
 <title>Sharvi – Premium Resin Jewellery</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --rose: #c9967a; --rose-dark: #a87560; --rose-light: #f0d8cc; --rose-pale: #faf4f1;
-  --text: #2c211d; --text-light: #7a5c52; --white: #ffffff;
+  --text: #2c211d; --text-light: #7a5c52; --white: #ffffff; --cream: #fdf8f5;
   --shadow: 0 8px 24px rgba(180,120,100,0.1); --radius: 18px;
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height:100%; background:var(--cream); font-family:'Jost',sans-serif; color:var(--text); overscroll-behavior:none; }
 #app { max-width:430px; margin:0 auto; min-height:100vh; background:var(--white); position:relative; overflow-x:hidden; box-shadow: 0 0 40px rgba(0,0,0,0.05); }
-
 .page { display:none; min-height:100vh; padding-bottom:90px; }
 .page.active { display:block; animation: fadeUp 0.4s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
 
-.btn-primary { width:100%; padding:15px; background:linear-gradient(135deg, var(--rose), var(--rose-dark)); color:#fff; border:none; border-radius:50px; font-family:'Jost',sans-serif; font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 8px 25px rgba(201, 150, 122, 0.4); }
-.btn-outline { width:100%; padding:14px; background:transparent; color:var(--rose-dark); border:1.5px solid var(--rose); border-radius:50px; font-family:'Jost',sans-serif; font-size:15px; font-weight:600; cursor:pointer; }
+/* UI ELEMENTS */
+.btn-primary { width:100%; padding:15px; background:linear-gradient(135deg, var(--rose), var(--rose-dark)); color:#fff; border:none; border-radius:50px; font-weight:600; cursor:pointer; box-shadow:0 8px 25px rgba(201, 150, 122, 0.4); }
+.btn-outline { width:100%; padding:14px; background:transparent; color:var(--rose-dark); border:1.5px solid var(--rose); border-radius:50px; font-weight:600; cursor:pointer; }
+.form-group { margin-bottom:15px; }
+.form-input { width:100%; padding:14px 16px; border-radius:12px; border:1.5px solid var(--rose-light); background:var(--rose-pale); font-family:'Jost',sans-serif; font-size:14px; outline:none; }
+.page-header { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 15px; position:sticky; top:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); z-index:50; border-bottom:1px solid var(--rose-pale);}
+.page-header h2 { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; }
 
-.auth-wrapper { padding: 40px 20px; display:flex; flex-direction:column; justify-content:center; min-height:100vh; background:linear-gradient(160deg, #fdf8f5 0%, #faf4f1 100%); text-align: center; }
-.auth-header h1 { font-family:'Cormorant Garamond',serif; font-size:48px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px;}
+/* AUTH */
+.auth-wrapper { padding: 40px 20px; display:flex; flex-direction:column; justify-content:center; min-height:100vh; background:linear-gradient(160deg, #fdf8f5 0%, #faf4f1 100%); }
+.auth-header { text-align:center; margin-bottom:30px; }
+.auth-header h1 { font-family:'Cormorant Garamond',serif; font-size:42px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.auth-tabs { display:flex; background:var(--rose-pale); border-radius:50px; padding:4px; margin-bottom:24px; }
+.auth-tab { flex:1; text-align:center; padding:12px; border-radius:50px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-light); }
+.auth-tab.active { background:var(--white); color:var(--rose); box-shadow:var(--shadow); }
 
+/* BOTTOM NAV */
 .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:rgba(255,255,255,0.98); border-top:1px solid var(--rose-light); display:none; justify-content:space-around; align-items:center; padding:12px 0 20px; z-index:100; }
 .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+.nav-item svg { width:22px; height:22px; stroke:var(--text-light); fill: none; stroke-width: 2; }
 .nav-item span { font-size:10px; color:var(--text-light); font-weight:500; }
+.nav-item.active svg { stroke:var(--rose); }
 .nav-item.active span { color:var(--rose); }
 
-.page-header { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 15px; position:sticky; top:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); z-index:50; border-bottom:1px solid var(--rose-pale);}
-.page-header h2 { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:var(--text); }
+/* PRODUCT CARDS & GRID */
 .product-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:20px; }
-.product-card { background:var(--white); border-radius:var(--radius); padding:15px; border:1px solid var(--rose-pale); text-align:center; }
+.product-card { background:var(--white); border-radius:var(--radius); overflow:hidden; border:1px solid var(--rose-pale); position: relative; display: flex; flex-direction: column; }
+.product-img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:12px; }
+.product-info { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.wish-icon-btn { position: absolute; top: 10px; right: 10px; background: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items:center; justify-content:center; cursor: pointer; box-shadow: var(--shadow); }
+
+/* CART & SUMMARY */
+.cart-item { display:flex; gap:15px; padding:15px; border-bottom:1px solid var(--rose-pale); align-items:center; }
+.cart-img { width:60px; height:60px; object-fit:cover; border-radius:10px; }
+.summary-box { background: var(--rose-pale); padding: 20px; border-radius: 12px; margin: 20px; }
+.summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
 
 .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(44, 33, 29, 0.95); color:#fff; padding:14px 24px; border-radius:50px; font-size:13px; opacity:0; transition:all 0.3s; pointer-events:none; z-index:999; }
 .toast.show { opacity:1; }
 </style>
 </head>
 <body>
-
-<form name="sharvi_orders" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="text" name="customer_name" id="form_name">
-  <input type="email" name="customer_email" id="form_email">
-  <input type="text" name="product_ordered" id="form_product">
-  <input type="text" name="amount" id="form_amount">
-</form>
-
 <div id="app">
 
   <div id="auth-page" class="page active">
     <div class="auth-wrapper">
       <div class="auth-header">
         <h1>Sharvi</h1>
-        <p style="color:var(--text-light); font-size:16px; margin-bottom: 40px;">Handcrafted Resin Magic</p>
+        <p style="color:var(--text-light); font-size:14px; margin-top:5px;">Premium Handcrafted Resin Jewellery</p>
       </div>
-      
-      <button class="btn-primary" onclick="netlifyIdentity.open()">Login / Register to Shop</button>
-      <p style="margin-top:20px; font-size:13px; color:var(--text-light);">Secure authentication powered by Netlify</p>
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</div>
+        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</div>
+      </div>
+      <div id="form-login">
+        <div class="form-group"><input class="form-input" type="email" id="login-email" placeholder="Email Address"></div>
+        <div class="form-group"><input class="form-input" type="password" id="login-pass" placeholder="Password"></div>
+        <button class="btn-primary" onclick="doLogin()">Secure Login</button>
+      </div>
+      <div id="form-register" style="display:none;">
+        <div class="form-group"><input class="form-input" type="text" id="reg-name" placeholder="Full Name"></div>
+        <div class="form-group"><input class="form-input" type="email" id="reg-email" placeholder="Email Address"></div>
+        <div class="form-group"><input class="form-input" type="password" id="reg-pass" placeholder="Create Password"></div>
+        <button class="btn-primary" onclick="doRegister()">Sign Up & Verify</button>
+        <p style="font-size:12px; color: var(--text-light); text-align:center; margin-top:10px;">Note: Verification link will be sent to your email.</p>
+      </div>
     </div>
   </div>
 
   <div id="home-page" class="page">
     <div class="page-header">
-      <h2 style="font-family:'Cormorant Garamond'; font-size:30px; background:linear-gradient(135deg, #a87560, #d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Sharvi</h2>
+      <h2 style="font-family:'Cormorant Garamond'; font-size:32px; color:var(--rose-dark);">Sharvi ✦</h2>
     </div>
-    <div style="padding:20px;">
-      <h3>Exquisite Resin Collection</h3>
-      <p style="color:var(--text-light); font-size:14px; margin-top:5px;">Click below to place a direct order:</p>
+    <div style="padding:20px 20px 0;">
+      <h3 style="font-family:'Cormorant Garamond'; font-size:24px;">Trending Masterpieces</h3>
     </div>
-    <div class="product-grid">
-      <div class="product-card">🌸<br><b>Rose Ring</b><br>₹499<br><br><button class="btn-primary" style="padding:5px; font-size:12px;" onclick="placeOrder('Rose Ring', '499')">Buy Now</button></div>
-      <div class="product-card">🌊<br><b>Ocean Pendant</b><br>₹699<br><br><button class="btn-primary" style="padding:5px; font-size:12px;" onclick="placeOrder('Ocean Pendant', '699')">Buy Now</button></div>
-    </div>
+    <div class="product-grid" id="home-grid">Loading Products...</div>
+  </div>
+
+  <div id="shop-page" class="page">
+    <div class="page-header"><h2>Explore Shop</h2></div>
+    <div class="product-grid" id="shop-grid">Loading Products...</div>
+  </div>
+
+  <div id="wishlist-page" class="page">
+    <div class="page-header"><h2>My Favourites</h2></div>
+    <div class="product-grid" id="wishlist-grid">Your Wishlist is empty.</div>
+  </div>
+
+  <div id="cart-page" class="page">
+    <div class="page-header"><h2>Shopping Bag</h2></div>
+    <div id="cart-items-container"></div>
+    <div id="cart-summary-container"></div>
   </div>
 
   <div id="profile-page" class="page">
-    <div class="page-header"><h2>My Profile</h2></div>
+    <div class="page-header"><h2>Account Profile</h2></div>
     <div style="padding:30px 20px; text-align:center;">
       <div style="font-size:60px; margin-bottom:10px;">👤</div>
-      <h3 id="display-name" style="font-family:'Cormorant Garamond'; font-size:28px;">Customer</h3>
-      <p id="display-email" style="color:var(--text-light); font-size:14px; margin-bottom:30px;">email</p>
-      <button class="btn-outline" style="border-color:#e57373; color:#e57373;" onclick="netlifyIdentity.logout()">Logout</button>
+      <h3 id="profile-name" style="font-size:24px; font-family:'Cormorant Garamond';">Customer</h3>
+      <p id="profile-email" style="color:var(--text-light); font-size:14px; margin-bottom:30px;">email@example.com</p>
+      <button class="btn-outline" style="border-color:#e57373; color:#e57373;" onclick="doLogout()">Logout Account</button>
     </div>
   </div>
 
   <nav class="bottom-nav" id="main-nav">
-    <div class="nav-item active" onclick="showPage('home-page', this)"><span>Home</span></div>
-    <div class="nav-item" onclick="showPage('profile-page', this)"><span>Profile</span></div>
+    <div class="nav-item active" onclick="showPage('home-page', this)"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></div>
+    <div class="nav-item" onclick="showPage('shop-page', this)"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span>Shop</span></div>
+    <div class="nav-item" onclick="showPage('wishlist-page', this)"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Wishlist</span></div>
+    <div class="nav-item" onclick="showPage('cart-page', this)"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg><span>Cart</span></div>
+    <div class="nav-item" onclick="showPage('profile-page', this)"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></div>
   </nav>
 
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
+// ===================================================
+// CONNECT YOUR SUPABASE HERE (Paste exact details)
+// ===================================================
+const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let globalProducts = [];
+let cart = [];
+let wishlist = [];
 let currentUser = null;
 
-// Initialize Netlify Identity
-if (window.netlifyIdentity) {
-  window.netlifyIdentity.on("init", user => {
-    if (!user) {
-      window.netlifyIdentity.on("login", () => { document.location.href = "/"; });
-    } else {
-      handleUserLogin(user);
-    }
-  });
-
-  window.netlifyIdentity.on("login", user => {
-    handleUserLogin(user);
-    netlifyIdentity.close();
-  });
-
-  window.netlifyIdentity.on("logout", () => {
+// Track Real-time Session Status
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    currentUser = session.user;
+    document.getElementById('main-nav').style.display = 'flex';
+    document.getElementById('profile-name').innerText = currentUser.user_metadata.full_name || "Valued Buyer";
+    document.getElementById('profile-email').innerText = currentUser.email;
+    showPage('home-page');
+    syncInventoryAndUI();
+  } else {
     currentUser = null;
     document.getElementById('main-nav').style.display = 'none';
     showPage('auth-page');
-    showToast("Logged out successfully");
-  });
-}
-
-function handleUserLogin(user) {
-  currentUser = user;
-  document.getElementById('main-nav').style.display = 'flex';
-  
-  // Set Profile Details
-  document.getElementById('display-name').innerText = user.user_metadata.full_name || "Valued Customer";
-  document.getElementById('display-email').innerText = user.email;
-  
-  showPage('home-page');
-  showToast("Welcome to Sharvi! 🎉");
-}
-
-function placeOrder(productName, price) {
-  if(!currentUser) {
-    showToast("Please login first!");
-    return;
   }
+});
 
-  showToast("Sending Order...");
-
-  // Fill the hidden form with real data
-  const formData = new FormData();
-  formData.append("form-name", "sharvi_orders");
-  formData.append("customer_name", currentUser.user_metadata.full_name || "Customer");
-  formData.append("customer_email", currentUser.email);
-  formData.append("product_ordered", productName);
-  formData.append("amount", price);
-
-  // Send the form data to Netlify silently via JS
-  fetch("/", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams(formData).toString()
-  })
-  .then(() => showToast(`Order Confirmed for ${productName}! ✅`))
-  .catch((error) => showToast("Order failed. Please try again."));
+async function syncInventoryAndUI() {
+  const { data, error } = await supabase.from('products').select('*');
+  if(!error && data) {
+    globalProducts = data;
+    renderProducts();
+  }
 }
 
-function showPage(pageId, navElement = null) {
+function renderProducts() {
+  const productHTML = globalProducts.map(p => `
+    <div class="product-card">
+      <img src="${p.image}" class="product-img">
+      <button class="wish-icon-btn" onclick="toggleWishlist(${p.id})">${wishlist.includes(p.id) ? '❤️' : '🤍'}</button>
+      <div class="product-info">
+        <h4 style="font-size:14px; font-weight:500;">${p.name}</h4>
+        <p style="font-size:12px; color:var(--text-light);">${p.sub}</p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <span><b>₹${p.price}</b> <span style="text-decoration:line-through; font-size:11px; color:gray;">₹${p.mrp}</span></span>
+          <button class="btn-primary" style="width:auto; padding:6px 12px; font-size:11px; margin:0;" onclick="addToCart(${p.id})">+ Add</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  
+  document.getElementById('home-grid').innerHTML = productHTML || "No products live.";
+  document.getElementById('shop-grid').innerHTML = productHTML || "No products live.";
+}
+
+// CART & WISHLIST CODE
+function addToCart(id) {
+  const item = globalProducts.find(p => p.id === id);
+  if(item) {
+    cart.push(item);
+    showToast(`${item.name} added to Cart! 🛍️`);
+  }
+}
+
+function toggleWishlist(id) {
+  if(wishlist.includes(id)) wishlist = wishlist.filter(w => w !== id);
+  else wishlist.push(id);
+  renderProducts();
+  renderWishlist();
+  showToast("Wishlist updated!");
+}
+
+function renderWishlist() {
+  const list = globalProducts.filter(p => wishlist.includes(p.id));
+  const container = document.getElementById('wishlist-grid');
+  if(list.length === 0) { container.innerHTML = "<div style='padding:20px; color:gray;'>Wishlist is empty</div>"; return; }
+  container.innerHTML = list.map(p => `
+    <div class="product-card">
+      <img src="${p.image}" class="product-img">
+      <div class="product-info">
+        <h4>${p.name}</h4>
+        <button class="btn-primary" style="font-size:12px; padding:6px;" onclick="addToCart(${p.id})">Add to Bag</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCart() {
+  const itemsContainer = document.getElementById('cart-items-container');
+  const summaryContainer = document.getElementById('cart-summary-container');
+  if(cart.length === 0) { itemsContainer.innerHTML = "<div class='auth-header' style='padding:40px 0;'>Bag is Empty.</div>"; summaryContainer.innerHTML=""; return; }
+  
+  itemsContainer.innerHTML = cart.map((item, idx) => `
+    <div class="cart-item">
+      <img src="${item.image}" class="cart-img">
+      <div style="flex-grow:1;">
+        <h4>${item.name}</h4>
+        <b>₹${item.price}</b>
+      </div>
+      <button style="border:none; background:none; color:red; font-size:12px;" onclick="removeCartItem(${idx})">Remove</button>
+    </div>
+  `).join('');
+
+  let subtotal = cart.reduce((acc, current) => acc + current.price, 0);
+  summaryContainer.innerHTML = `
+    <div class="summary-box">
+      <div class="summary-row"><span>Items Total</span><span>₹${subtotal}</span></div>
+      <div class="summary-row"><span>Delivery Charges</span><span style="color:green;">FREE</span></div>
+      <div class="summary-row" style="font-weight:700; border-top:1px dashed #ccc; padding-top:10px;"><span>Final Amount</span><span>₹${subtotal}</span></div>
+      <button class="btn-primary" style="margin-top:15px;" onclick="checkoutRealOrder(${subtotal})">Place Real Order (COD) 🎉</button>
+    </div>
+  `;
+}
+
+function removeCartItem(idx) {
+  cart.splice(idx, 1);
+  renderCart();
+}
+
+async function checkoutRealOrder(totalAmount) {
+  showToast("Processing cloud order...");
+  const productNames = cart.map(i => i.name).join(', ');
+
+  const { data, error } = await supabase.from('orders').insert([
+    {
+      customer_name: currentUser.user_metadata.full_name || "Verified Client",
+      customer_email: currentUser.email,
+      product_name: productNames,
+      amount_paid: totalAmount
+    }
+  ]);
+
+  if(error) { showToast("Order Failed: " + error.message); }
+  else {
+    cart = [];
+    showToast("Order Logged in Database! 🎉");
+    showPage('home-page');
+  }
+}
+
+// AUTH FUNCTIONS
+async function doRegister() {
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-pass').value;
+  if(!name || !email || !password) { showToast("Fill all inputs"); return; }
+  showToast("Sending confirmation...");
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
+  if(error) showToast(error.message);
+  else showToast("Verification Link Sent! Check Email Inbox.");
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  showToast("Verifying user...");
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+  if(error) showToast(error.message);
+  else showToast("Welcome back!");
+}
+
+async function doLogout() { await supabase.auth.signOut(); }
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
+}
+function showPage(id, navElement = null) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-  if(navElement) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    navElement.classList.add('active');
-  }
-  window.scrollTo(0,0);
+  document.getElementById(id).classList.add('active');
+  if(navElement) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); navElement.classList.add('active'); }
+  if(id === 'cart-page') renderCart();
+  if(id === 'wishlist-page') renderWishlist();
 }
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.innerText = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
-}
+function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2500); }
 </script>
 </body>
 </html>
