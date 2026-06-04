@@ -3,561 +3,155 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sharvi Admin Panel</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Sharvi – Executive Admin Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root {
-  --rose: #c9967a; --rose-dark: #a87560; --rose-light: #f0d8cc;
-  --rose-pale: #faf4f1; --gold: #d4a96a; --cream: #fdf8f5;
-  --text: #3a2a24; --text-light: #7a5c52; --white: #ffffff;
-  --shadow: 0 4px 24px rgba(180,120,100,0.13);
-  --radius: 14px; --green: #4caf50; --red: #e57373;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:#f5f0ed; font-family:'Jost',sans-serif; color:var(--text); min-height:100vh; }
-
-/* LOGIN */
-#login-screen {
-  min-height:100vh; display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(160deg, #f5e6de 0%, #fdf0e8 50%, #fff5f0 100%);
-}
-.login-card { background:var(--white); border-radius:20px; padding:40px 36px; width:360px; box-shadow:0 20px 60px rgba(180,120,100,0.2); text-align:center; }
-.login-logo { font-family:'Cormorant Garamond',serif; font-size:36px; background:linear-gradient(135deg,#c9967a,#d4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
-.login-sub { font-size:11px; color:var(--text-light); letter-spacing:2px; text-transform:uppercase; margin-bottom:30px; }
-.login-input { width:100%; padding:13px 16px; border-radius:10px; border:1.5px solid var(--rose-light); background:var(--rose-pale); font-family:'Jost',sans-serif; font-size:14px; outline:none; margin-bottom:12px; transition:border-color 0.2s; }
-.login-input:focus { border-color:var(--rose); }
-.login-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--rose),var(--rose-dark)); color:#fff; border:none; border-radius:50px; font-family:'Jost',sans-serif; font-size:15px; font-weight:600; cursor:pointer; letter-spacing:1px; }
-.login-hint { font-size:11px; color:var(--text-light); margin-top:16px; }
-
-/* ADMIN LAYOUT */
-#admin-screen { display:none; }
-.admin-sidebar {
-  position:fixed; left:0; top:0; bottom:0; width:220px;
-  background:linear-gradient(180deg, var(--text) 0%, #5a3a30 100%);
-  padding:24px 0; z-index:100;
-}
-.sidebar-logo { text-align:center; padding:0 20px 24px; border-bottom:1px solid rgba(255,255,255,0.1); }
-.sidebar-logo-name { font-family:'Cormorant Garamond',serif; font-size:26px; color:#fff; }
-.sidebar-logo-sub { font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:2px; }
-.sidebar-label { font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:2px; text-transform:uppercase; padding:20px 20px 8px; }
-.sidebar-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; transition:background 0.2s; color:rgba(255,255,255,0.7); font-size:14px; }
-.sidebar-item:hover, .sidebar-item.active { background:rgba(201,150,122,0.25); color:#fff; }
-.sidebar-item .s-icon { font-size:18px; }
-.sidebar-logout { position:absolute; bottom:20px; left:0; right:0; text-align:center; }
-.sidebar-logout button { background:rgba(255,255,255,0.1); border:none; color:rgba(255,255,255,0.6); padding:8px 20px; border-radius:50px; font-family:'Jost',sans-serif; font-size:12px; cursor:pointer; }
-
-.admin-main { margin-left:220px; min-height:100vh; }
-.admin-topbar { background:var(--white); padding:16px 28px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--rose-light); box-shadow:var(--shadow); }
-.admin-topbar h1 { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; }
-.topbar-right { display:flex; align-items:center; gap:14px; }
-.admin-badge { background:var(--rose-pale); color:var(--rose); font-size:12px; font-weight:600; padding:6px 14px; border-radius:50px; }
-
-.admin-content { padding:24px 28px; }
-
-/* STATS */
-.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
-.stat-card { background:var(--white); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
-.stat-icon { font-size:28px; margin-bottom:10px; }
-.stat-value { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:var(--rose-dark); }
-.stat-label { font-size:12px; color:var(--text-light); margin-top:2px; }
-
-/* TABLES */
-.section-card { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-bottom:24px; }
-.section-card-header { padding:18px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--rose-light); }
-.section-card-header h3 { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:600; }
-.btn-add { background:linear-gradient(135deg,var(--rose),var(--rose-dark)); color:#fff; border:none; padding:9px 18px; border-radius:50px; font-family:'Jost',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
-
-table { width:100%; border-collapse:collapse; }
-th { background:var(--rose-pale); padding:12px 16px; text-align:left; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-light); }
-td { padding:14px 16px; border-bottom:1px solid #f5ede8; font-size:14px; vertical-align:middle; }
-tr:last-child td { border-bottom:none; }
-tr:hover td { background:#fdfaf8; }
-.product-emoji-cell { font-size:28px; }
-.badge-cell { font-size:10px; font-weight:700; padding:3px 10px; border-radius:50px; background:var(--rose-pale); color:var(--rose); }
-.action-btns { display:flex; gap:8px; }
-.btn-edit { background:var(--rose-pale); color:var(--rose); border:none; padding:7px 14px; border-radius:50px; font-family:'Jost',sans-serif; font-size:12px; font-weight:600; cursor:pointer; }
-.btn-delete { background:#fde8e8; color:var(--red); border:none; padding:7px 14px; border-radius:50px; font-family:'Jost',sans-serif; font-size:12px; font-weight:600; cursor:pointer; }
-.btn-toggle { background:#e8f5e9; color:#2e7d32; border:none; padding:7px 14px; border-radius:50px; font-family:'Jost',sans-serif; font-size:12px; font-weight:600; cursor:pointer; }
-
-/* MODAL */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; display:none; align-items:center; justify-content:center; }
-.modal-overlay.show { display:flex; }
-.modal { background:var(--white); border-radius:20px; padding:30px; width:500px; max-width:95vw; max-height:90vh; overflow-y:auto; box-shadow:0 30px 80px rgba(0,0,0,0.2); }
-.modal h3 { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; margin-bottom:20px; }
-.form-group { margin-bottom:14px; }
-.form-label { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-light); margin-bottom:6px; display:block; }
-.form-input { width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--rose-light); background:var(--rose-pale); font-family:'Jost',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s; }
-.form-input:focus { border-color:var(--rose); }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.form-select { width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--rose-light); background:var(--rose-pale); font-family:'Jost',sans-serif; font-size:14px; outline:none; }
-.modal-actions { display:flex; gap:10px; margin-top:20px; }
-.modal-actions button { flex:1; padding:13px; border-radius:50px; font-family:'Jost',sans-serif; font-size:14px; font-weight:600; cursor:pointer; }
-.btn-save { background:linear-gradient(135deg,var(--rose),var(--rose-dark)); color:#fff; border:none; }
-.btn-cancel { background:transparent; color:var(--rose); border:1.5px solid var(--rose); }
-
-/* ORDER STATUS */
-.status-pill { font-size:11px; font-weight:700; padding:4px 12px; border-radius:50px; }
-.s-confirmed { background:#e8f5e9; color:#2e7d32; }
-.s-shipped { background:#fff3e0; color:#e65100; }
-.s-delivered { background:#e3f2fd; color:#1565c0; }
-.s-cancelled { background:#fde8e8; color:#c62828; }
-
-/* PAGES */
-.admin-page { display:none; }
-.admin-page.active { display:block; }
-
-/* Toast */
-.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--text); color:#fff; padding:12px 24px; border-radius:50px; font-size:13px; font-weight:500; opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; white-space:nowrap; }
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* MOBILE */
-@media (max-width: 768px) {
-  .admin-sidebar { width:60px; }
-  .sidebar-item span, .sidebar-logo-name, .sidebar-logo-sub, .sidebar-label { display:none; }
-  .admin-main { margin-left:60px; }
-  .stats-grid { grid-template-columns:1fr 1fr; }
-  .admin-content { padding:16px; }
-}
+  :root { --rose: #c9967a; --rose-dark: #a87560; --text: #2c211d; --cream: #fdf8f5; }
+  body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--text); padding: 20px; }
+  .container { max-width: 700px; margin: 0 auto; background: white; padding: 25px; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+  h2, h3 { margin-bottom: 20px; color: var(--rose-dark); border-bottom: 2px solid var(--cream); padding-bottom: 10px; }
+  .form-group { margin-bottom: 15px; }
+  label { display: block; font-weight: 500; margin-bottom: 5px; }
+  input, select { width: 100%; padding: 12px; border: 1px solid #f0d8cc; border-radius: 10px; }
+  button { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--rose), var(--rose-dark)); color: white; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+  .tabs { display: flex; gap: 15px; margin-bottom: 20px; }
+  .tab-btn { background: #faf4f1; color: var(--text); border: 1px solid var(--rose-light); border-radius: 10px; padding: 10px; margin: 0; }
+  .tab-btn.active { background: var(--rose-dark); color: white; }
+  .item-card { background: var(--cream); padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .danger-btn { background: #e57373; width: auto; padding: 6px 15px; font-size: 13px; margin: 0; border-radius: 6px; }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">Sharvi</div>
-    <div class="login-sub">Admin Panel</div>
-    <input class="login-input" type="text" placeholder="Username" id="admin-user">
-    <input class="login-input" type="password" placeholder="Password" id="admin-pass">
-    <button class="login-btn" onclick="adminLogin()">Login to Dashboard</button>
-    <div class="login-hint">Default: admin / sharvi123</div>
+<div class="container" id="lock-screen">
+  <h2>Sharvi Admin Security Lock</h2>
+  <div class="form-group">
+    <label>Secret Control Passcode</label>
+    <input type="password" id="admin-code" placeholder="••••••••">
   </div>
+  <button onclick="unlockConsole()">Verify Identity</button>
 </div>
 
-<!-- ADMIN PANEL -->
-<div id="admin-screen">
-  <!-- Sidebar -->
-  <div class="admin-sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-name">Sharvi</div>
-      <div class="sidebar-logo-sub">Admin</div>
-    </div>
-    <div class="sidebar-label">Main</div>
-    <div class="sidebar-item active" onclick="showAdminPage('dashboard')">
-      <span class="s-icon">📊</span><span>Dashboard</span>
-    </div>
-    <div class="sidebar-item" onclick="showAdminPage('products')">
-      <span class="s-icon">💍</span><span>Products</span>
-    </div>
-    <div class="sidebar-item" onclick="showAdminPage('orders')">
-      <span class="s-icon">📦</span><span>Orders</span>
-    </div>
-    <div class="sidebar-label">Settings</div>
-    <div class="sidebar-item" onclick="showAdminPage('settings')">
-      <span class="s-icon">⚙️</span><span>Settings</span>
-    </div>
-    <div class="sidebar-logout">
-      <button onclick="adminLogout()">Logout</button>
-    </div>
+<div class="container" id="admin-dashboard" style="display: none;">
+  <h2>Store Command Center</h2>
+  
+  <div class="tabs">
+    <button class="tab-btn active" id="btn-tab-inv" onclick="switchView('inventory')">Manage Inventory</button>
+    <button class="tab-btn" id="btn-tab-ord" onclick="switchView('orders')">Customer Orders</button>
   </div>
 
-  <!-- Main -->
-  <div class="admin-main">
-    <div class="admin-topbar">
-      <h1 id="admin-page-title">Dashboard</h1>
-      <div class="topbar-right">
-        <span class="admin-badge">👋 Admin</span>
-        <a href="/" target="_blank" style="font-size:13px;color:var(--rose);text-decoration:none;font-weight:500;">View Site →</a>
-      </div>
-    </div>
+  <div id="view-inventory">
+    <h3 id="form-title">Add/Edit Product</h3>
+    <input type="hidden" id="edit-id">
+    <div class="form-group"><label>Product Title</label><input type="text" id="p-name"></div>
+    <div class="form-group"><label>Subtext / Detail</label><input type="text" id="p-sub"></div>
+    <div class="form-group"><label>Category</label><select id="p-cat"><option value="rings">Rings</option><option value="earrings">Earrings</option><option value="necklaces">Necklaces</option></select></div>
+    <div class="form-group"><label>Product Image URL</label><input type="text" id="p-img" placeholder="Paste link"></div>
+    <div class="form-group"><label>Selling Price (₹)</label><input type="number" id="p-price"></div>
+    <div class="form-group"><label>MRP (₹)</label><input type="number" id="p-mrp"></div>
+    <button id="save-btn" onclick="commitProduct()">Publish Product to Live Shelf</button>
 
-    <div class="admin-content">
+    <h3 style="margin-top:40px;">Active Catalog</h3>
+    <div id="catalog-list">Loading live cloud products...</div>
+  </div>
 
-      <!-- DASHBOARD -->
-      <div class="admin-page active" id="page-dashboard">
-        <div class="stats-grid" id="stats-grid">
-          <!-- filled by JS -->
-        </div>
-        <div class="section-card">
-          <div class="section-card-header"><h3>Recent Orders</h3></div>
-          <div id="recent-orders-table"></div>
-        </div>
-      </div>
-
-      <!-- PRODUCTS -->
-      <div class="admin-page" id="page-products">
-        <div class="section-card">
-          <div class="section-card-header">
-            <h3>All Products</h3>
-            <button class="btn-add" onclick="openProductModal()">+ Add Product</button>
-          </div>
-          <div style="overflow-x:auto;">
-            <table id="products-table">
-              <thead>
-                <tr>
-                  <th></th><th>Name</th><th>Category</th>
-                  <th>Price</th><th>MRP</th><th>Badge</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="products-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ORDERS -->
-      <div class="admin-page" id="page-orders">
-        <div class="section-card">
-          <div class="section-card-header"><h3>All Orders</h3></div>
-          <div style="overflow-x:auto;">
-            <table>
-              <thead>
-                <tr><th>Order ID</th><th>Date</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th></tr>
-              </thead>
-              <tbody id="orders-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- SETTINGS -->
-      <div class="admin-page" id="page-settings">
-        <div class="section-card">
-          <div class="section-card-header"><h3>Admin Settings</h3></div>
-          <div style="padding:24px;">
-            <div class="form-group">
-              <label class="form-label">Change Admin Password</label>
-              <input class="form-input" type="password" placeholder="New Password" id="new-admin-pass" style="max-width:300px;">
-            </div>
-            <button class="btn-add" onclick="changeAdminPass()" style="margin-top:4px;">Save Password</button>
-
-            <div style="border-top:1px solid var(--rose-light);margin:28px 0;"></div>
-
-            <div class="form-group">
-              <label class="form-label">Coupon Codes</label>
-              <div style="font-size:13px;color:var(--text-light);margin-bottom:10px;">Active coupon: <strong>SHARVI10</strong> (10% off)</div>
-            </div>
-
-            <div style="border-top:1px solid var(--rose-light);margin:28px 0;"></div>
-
-            <div>
-              <label class="form-label" style="color:var(--red);">Danger Zone</label>
-              <button onclick="resetAllProducts()" style="background:#fde8e8;color:var(--red);border:none;padding:10px 20px;border-radius:50px;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-right:10px;">Reset Products to Default</button>
-              <button onclick="clearAllOrders()" style="background:#fde8e8;color:var(--red);border:none;padding:10px 20px;border-radius:50px;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Clear All Orders</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
+  <div id="view-orders" style="display: none;">
+    <h3>Incoming Real-time Orders</h3>
+    <div id="orders-list">No incoming orders yet.</div>
   </div>
 </div>
-
-<!-- PRODUCT MODAL -->
-<div class="modal-overlay" id="product-modal">
-  <div class="modal">
-    <h3 id="modal-title">Add New Product</h3>
-    <input type="hidden" id="modal-product-id">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Product Name *</label>
-        <input class="form-input" type="text" id="p-name" placeholder="e.g. Pastel Bloom Earrings">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Sub-title</label>
-        <input class="form-input" type="text" id="p-sub" placeholder="e.g. Floral Resin · Drop">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Category *</label>
-        <select class="form-select" id="p-cat">
-          <option value="earrings">Earrings</option>
-          <option value="necklace">Necklaces</option>
-          <option value="bracelet">Bracelets</option>
-          <option value="ring">Rings</option>
-          <option value="set">Sets</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Emoji / Icon</label>
-        <input class="form-input" type="text" id="p-emoji" placeholder="🌸" style="font-size:22px;">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Price (₹) *</label>
-        <input class="form-input" type="number" id="p-price" placeholder="349">
-      </div>
-      <div class="form-group">
-        <label class="form-label">MRP (₹) *</label>
-        <input class="form-input" type="number" id="p-mrp" placeholder="599">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Badge (optional)</label>
-      <input class="form-input" type="text" id="p-badge" placeholder="e.g. New, Bestseller, Sale">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Description</label>
-      <textarea class="form-input" id="p-desc" rows="3" placeholder="Product description..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Features (comma separated)</label>
-      <input class="form-input" type="text" id="p-features" placeholder="Hypoallergenic hooks, Lightweight resin, Waterproof coating">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeProductModal()">Cancel</button>
-      <button class="btn-save" onclick="saveProduct()">Save Product</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="admin-toast"></div>
 
 <script>
-const defaultProducts = [
-  { id:1, name:'Pastel Bloom Earrings', sub:'Floral Resin · Drop', cat:'earrings', emoji:'🌸', price:349, mrp:599, badge:'Bestseller', desc:'Handcrafted with premium resin, these delicate floral drop earrings capture the softness of blooming flowers. Lightweight and perfect for everyday wear.', colors:['#f5c2d4','#c9e4d5','#d4c2f5','#f5e2c2'], features:['Hypoallergenic hooks','Lightweight resin','Waterproof coating','Handmade with love'] },
-  { id:2, name:'Ocean Haze Necklace', sub:'Blue Swirl Resin', cat:'necklace', emoji:'🌊', price:549, mrp:899, badge:'New', desc:'Deep blue swirls of resin come together to create this mesmerising ocean-inspired pendant.', colors:['#4a90d9','#2d6a8a','#7ecbcf','#2d4a6a'], features:['18" gold-toned chain','Blue resin pendant','Lobster clasp','Gift box included'] },
-  { id:3, name:'Rose Quartz Ring', sub:'Adjustable Band', cat:'ring', emoji:'💍', price:299, mrp:449, badge:'Sale', desc:'A delicate rose-pink resin cabochon set on an adjustable gold-tone band.', colors:['#f5c2d4','#e8a4b8','#d4a0ae','#f0d4da'], features:['Adjustable band','Rose pink resin','Anti-tarnish coating','Nickel-free'] },
-  { id:4, name:'Confetti Joy Studs', sub:'Multicolour Glitter', cat:'earrings', emoji:'✨', price:249, mrp:399, badge:'', desc:'Tiny round studs packed with colourful confetti glitter in clear resin.', colors:['#f5d76e','#f5c2d4','#c2d4f5','#c2f5d4'], features:['Sterling silver posts','Round stud earrings','Glitter resin','Gift-ready packaging'] },
-  { id:5, name:'Lavender Dream Set', sub:'Earrings + Bracelet', cat:'set', emoji:'💜', price:699, mrp:1199, badge:'Best Value', desc:'A complete set featuring lavender resin drop earrings and a matching stretch bracelet.', colors:['#d4c2f5','#b8a0e8','#c8aee8','#e4d4f8'], features:['2-piece set','Lavender resin','Stretch bracelet','Premium gift box'] },
-  { id:6, name:'Terracotta Sun Bracelet', sub:'Boho Resin Beads', cat:'bracelet', emoji:'🧡', price:399, mrp:649, badge:'', desc:'Earthy terracotta-toned resin beads strung on elastic for a comfortable boho look.', colors:['#c87941','#d4956a','#a86232','#e8b08a'], features:['Elastic stretch band','Resin beads','Boho design','One size fits all'] },
-  { id:7, name:'Galaxy Night Earrings', sub:'Deep Purple Cosmos', cat:'earrings', emoji:'🌌', price:449, mrp:749, badge:'New', desc:'Mesmerising deep-purple galaxy resin earrings with glitter and metallic foil inclusions.', colors:['#2d1a5c','#4a2880','#6a3da8','#8a5cc8'], features:['Hypoallergenic hooks','Galaxy resin','Foil inclusions','Drop style'] },
-  { id:8, name:'Mint Leaf Pendant', sub:'Green Resin · Delicate', cat:'necklace', emoji:'🍃', price:479, mrp:799, badge:'', desc:'A delicate mint-green leaf-shaped resin pendant on a dainty 16" gold chain.', colors:['#a8d8c4','#78c4a8','#c8e8d8','#50a888'], features:['16" gold chain','Leaf pendant','Mint green resin','Elegant clasp'] },
-  { id:9, name:'Blush Petal Ring Set', sub:'Set of 3 Rings', cat:'ring', emoji:'🌹', price:549, mrp:899, badge:'New', desc:'A gorgeous set of three adjustable blush-pink resin rings with delicate petal textures.', colors:['#f5c2d4','#f0aab8','#e89aaa','#fad4e0'], features:['Set of 3 rings','Adjustable bands','Blush resin','Anti-tarnish'] },
-  { id:10, name:'Sunset Glow Bracelet', sub:'Ombre Orange Resin', cat:'bracelet', emoji:'🌅', price:329, mrp:549, badge:'Sale', desc:'Warm orange-to-pink ombre resin bangle that captures the warmth of a golden sunset.', colors:['#f5a066','#f08050','#e86040','#f5c4a0'], features:['Rigid bangle','Ombre resin','Gold-tone finish','One size'] },
-];
+const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ===== AUTH =====
-function adminLogin() {
-  const user = document.getElementById('admin-user').value.trim();
-  const pass = document.getElementById('admin-pass').value.trim();
-  const savedPass = localStorage.getItem('sharvi_admin_pass') || 'sharvi123';
-  if(user === 'admin' && pass === savedPass) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-screen').style.display = 'block';
-    renderDashboard();
-  } else {
-    showAdminToast('Wrong credentials! Try admin / sharvi123');
-  }
-}
-function adminLogout() {
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('admin-screen').style.display = 'none';
-}
-function changeAdminPass() {
-  const p = document.getElementById('new-admin-pass').value.trim();
-  if(!p) { showAdminToast('Enter new password'); return; }
-  localStorage.setItem('sharvi_admin_pass', p);
-  showAdminToast('Password changed!');
-  document.getElementById('new-admin-pass').value = '';
+function unlockConsole() {
+  if(document.getElementById('admin-code').value === "SHARVI2026") {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    syncInventory();
+    syncOrders();
+  } else { alert("Access Denied."); }
 }
 
-// ===== DATA =====
-function getProducts() {
-  try { const s = localStorage.getItem('sharvi_products'); return s ? JSON.parse(s) : [...defaultProducts]; }
-  catch(e) { return [...defaultProducts]; }
-}
-function saveProducts(prods) { localStorage.setItem('sharvi_products', JSON.stringify(prods)); }
-function getOrders() {
-  try { const s = localStorage.getItem('sharvi_orders'); return s ? JSON.parse(s) : []; }
-  catch(e) { return []; }
-}
-function saveOrders(orders) { localStorage.setItem('sharvi_orders', JSON.stringify(orders)); }
-
-// ===== DASHBOARD =====
-function renderDashboard() {
-  const products = getProducts();
-  const orders = getOrders();
-  const revenue = orders.reduce((s,o)=>s+o.total,0);
-  const statsGrid = document.getElementById('stats-grid');
-  statsGrid.innerHTML = `
-    <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-value">${orders.length}</div><div class="stat-label">Total Orders</div></div>
-    <div class="stat-card"><div class="stat-icon">💍</div><div class="stat-value">${products.length}</div><div class="stat-label">Products</div></div>
-    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₹${revenue.toLocaleString()}</div><div class="stat-label">Revenue</div></div>
-    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${JSON.parse(localStorage.getItem('sharvi_users')||'[]').length}</div><div class="stat-label">Customers</div></div>
-  `;
-  renderRecentOrders();
+function switchView(view) {
+  document.getElementById('view-inventory').style.display = view === 'inventory' ? 'block' : 'none';
+  document.getElementById('view-orders').style.display = view === 'orders' ? 'block' : 'none';
+  document.getElementById('btn-tab-inv').classList.toggle('active', view === 'inventory');
+  document.getElementById('btn-tab-ord').classList.toggle('active', view === 'orders');
 }
 
-function renderRecentOrders() {
-  const orders = getOrders().slice(0,5);
-  const el = document.getElementById('recent-orders-table');
-  if(orders.length===0) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:14px;">No orders yet</div>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Order ID</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>
-    ${orders.map(o=>`<tr>
-      <td style="font-weight:600;color:var(--rose);">${o.id}</td>
-      <td style="color:var(--text-light);font-size:13px;">${o.items.map(i=>i.emoji+' '+i.name).join(', ')}</td>
-      <td style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;">₹${o.total}</td>
-      <td><span style="font-size:12px;text-transform:capitalize;">${o.paymentMethod||'online'}</span></td>
-      <td><span class="status-pill s-${o.status}">${o.status}</span></td>
-    </tr>`).join('')}
-  </tbody></table>`;
+async function syncInventory() {
+  const { data, error } = await supabase.from('products').select('*').order('id', {ascending: false});
+  if(error) return;
+  document.getElementById('catalog-list').innerHTML = data.map(p => `
+    <div class="item-card">
+      <div><b>${p.name}</b><br><span style="font-size:12px; color:gray;">Price: ₹${p.price} | Cat: ${p.cat}</span></div>
+      <div style="display:flex; gap:10px;">
+        <button class="danger-btn" style="background:#4fc3f7;" onclick='populateEditForm(${JSON.stringify(p)})'>Edit</button>
+        <button class="danger-btn" onclick="removeProduct(${p.id})">Delete</button>
+      </div>
+    </div>
+  `).join('') || "Shelf is empty.";
 }
 
-// ===== PRODUCTS =====
-function renderProductsTable() {
-  const products = getProducts();
-  const tbody = document.getElementById('products-tbody');
-  tbody.innerHTML = products.map(p=>`
-    <tr>
-      <td class="product-emoji-cell">${p.emoji}</td>
-      <td><strong>${p.name}</strong><br><span style="font-size:12px;color:var(--text-light);">${p.sub}</span></td>
-      <td style="text-transform:capitalize;">${p.cat}</td>
-      <td style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--rose-dark);">₹${p.price}</td>
-      <td style="color:#aaa;text-decoration:line-through;font-size:13px;">₹${p.mrp}</td>
-      <td>${p.badge ? `<span class="badge-cell">${p.badge}</span>` : '<span style="color:#ccc;font-size:12px;">—</span>'}</td>
-      <td>
-        <div class="action-btns">
-          <button class="btn-edit" onclick="openProductModal(${p.id})">✏️ Edit</button>
-          <button class="btn-delete" onclick="deleteProduct(${p.id})">🗑 Delete</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
-}
-
-// ===== PRODUCT MODAL =====
-let editingProductId = null;
-function openProductModal(id=null) {
-  editingProductId = id;
-  const modal = document.getElementById('product-modal');
-  document.getElementById('modal-title').textContent = id ? 'Edit Product' : 'Add New Product';
-  if(id) {
-    const p = getProducts().find(x=>x.id===id);
-    document.getElementById('p-name').value = p.name;
-    document.getElementById('p-sub').value = p.sub;
-    document.getElementById('p-cat').value = p.cat;
-    document.getElementById('p-emoji').value = p.emoji;
-    document.getElementById('p-price').value = p.price;
-    document.getElementById('p-mrp').value = p.mrp;
-    document.getElementById('p-badge').value = p.badge;
-    document.getElementById('p-desc').value = p.desc;
-    document.getElementById('p-features').value = p.features.join(', ');
-  } else {
-    ['p-name','p-sub','p-emoji','p-price','p-mrp','p-badge','p-desc','p-features'].forEach(id=>document.getElementById(id).value='');
-  }
-  modal.classList.add('show');
-}
-function closeProductModal() {
-  document.getElementById('product-modal').classList.remove('show');
-  editingProductId = null;
-}
-function saveProduct() {
-  const name = document.getElementById('p-name').value.trim();
-  const price = parseInt(document.getElementById('p-price').value);
-  const mrp = parseInt(document.getElementById('p-mrp').value);
-  if(!name || !price || !mrp) { showAdminToast('Please fill Name, Price & MRP!'); return; }
-  const products = getProducts();
-  const productData = {
-    name,
-    sub: document.getElementById('p-sub').value.trim(),
+async function commitProduct() {
+  const id = document.getElementById('edit-id').value;
+  const payload = {
+    name: document.getElementById('p-name').value,
+    sub: document.getElementById('p-sub').value,
     cat: document.getElementById('p-cat').value,
-    emoji: document.getElementById('p-emoji').value.trim() || '💍',
-    price, mrp,
-    badge: document.getElementById('p-badge').value.trim(),
-    desc: document.getElementById('p-desc').value.trim(),
-    colors: ['#f5c2d4','#c9e4d5','#d4c2f5','#f5e2c2'],
-    features: document.getElementById('p-features').value.split(',').map(f=>f.trim()).filter(Boolean)
+    image: document.getElementById('p-img').value,
+    price: parseInt(document.getElementById('p-price').value),
+    mrp: parseInt(document.getElementById('p-mrp').value)
   };
-  if(editingProductId) {
-    const idx = products.findIndex(p=>p.id===editingProductId);
-    products[idx] = { ...products[idx], ...productData };
-    showAdminToast('Product updated! ✅');
-  } else {
-    const newId = Math.max(...products.map(p=>p.id), 0) + 1;
-    products.push({ id: newId, ...productData });
-    showAdminToast('Product added! ✅');
+
+  if(id) { await supabase.from('products').update(payload).eq('id', id); }
+  else { await supabase.from('products').insert([payload]); }
+
+  // Clear Form
+  document.getElementById('edit-id').value = "";
+  document.getElementById('p-name').value = ""; document.getElementById('p-sub').value = "";
+  document.getElementById('p-img').value = ""; document.getElementById('p-price').value = ""; document.getElementById('p-mrp').value = "";
+  document.getElementById('form-title').innerText = "Add/Edit Product";
+  document.getElementById('save-btn').innerText = "Publish Product to Live Shelf";
+  
+  syncInventory();
+}
+
+function populateEditForm(p) {
+  document.getElementById('edit-id').value = p.id;
+  document.getElementById('p-name').value = p.name;
+  document.getElementById('p-sub').value = p.sub;
+  document.getElementById('p-cat').value = p.cat;
+  document.getElementById('p-img').value = p.image;
+  document.getElementById('p-price').value = p.price;
+  document.getElementById('p-mrp').value = p.mrp;
+  document.getElementById('form-title').innerText = "Modifying: " + p.name;
+  document.getElementById('save-btn').innerText = "Update Cloud Records";
+}
+
+async function removeProduct(id) {
+  if(confirm("Delete product permanently?")) {
+    await supabase.from('products').delete().eq('id', id);
+    syncInventory();
   }
-  saveProducts(products);
-  renderProductsTable();
-  renderDashboard();
-  closeProductModal();
-}
-function deleteProduct(id) {
-  if(!confirm('Delete this product?')) return;
-  const products = getProducts().filter(p=>p.id!==id);
-  saveProducts(products);
-  renderProductsTable();
-  renderDashboard();
-  showAdminToast('Product deleted');
 }
 
-// ===== ORDERS TABLE =====
-function renderOrdersTable() {
-  const orders = getOrders();
-  const tbody = document.getElementById('orders-tbody');
-  if(orders.length===0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-light);">No orders yet</td></tr>'; return;
-  }
-  tbody.innerHTML = orders.map(o=>`
-    <tr>
-      <td style="font-weight:600;color:var(--rose);">${o.id}</td>
-      <td style="font-size:12px;color:var(--text-light);">${o.date}</td>
-      <td style="font-size:13px;">${o.items.map(i=>i.emoji+' ×'+i.qty).join(' ')}</td>
-      <td style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;">₹${o.total}</td>
-      <td style="font-size:12px;text-transform:capitalize;">${o.paymentMethod||'online'}</td>
-      <td><span class="status-pill s-${o.status}">${o.status}</span></td>
-      <td>
-        <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding:6px 10px;border-radius:50px;border:1.5px solid var(--rose-light);font-family:'Jost',sans-serif;font-size:12px;background:var(--rose-pale);outline:none;cursor:pointer;">
-          <option value="confirmed" ${o.status==='confirmed'?'selected':''}>Confirmed</option>
-          <option value="shipped" ${o.status==='shipped'?'selected':''}>Shipped</option>
-          <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
-          <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
-        </select>
-      </td>
-    </tr>`).join('');
+async function syncOrders() {
+  const { data, error } = await supabase.from('orders').select('*').order('id', {ascending: false});
+  if(error) return;
+  document.getElementById('orders-list').innerHTML = data.map(o => `
+    <div style="background:#faf4f1; padding:15px; border-radius:12px; margin-bottom:10px; border-left:4px solid var(--rose-dark);">
+      <b>Order ID: #${o.id}</b><br>
+      <span>Client: ${o.customer_name} (${o.customer_email})</span><br>
+      <span>Products: <mark>${o.product_name}</mark></span><br>
+      <span>Collected: <b>₹${o.amount_paid}</b></span>
+    </div>
+  `).join('') || "No logged sales.";
 }
-function updateOrderStatus(orderId, status) {
-  const orders = getOrders();
-  const order = orders.find(o=>o.id===orderId);
-  if(order) { order.status = status; saveOrders(orders); renderOrdersTable(); renderDashboard(); showAdminToast('Order status updated!'); }
-}
-
-// ===== SETTINGS =====
-function resetAllProducts() {
-  if(!confirm('Reset all products to default? Custom products will be deleted.')) return;
-  saveProducts(defaultProducts);
-  renderProductsTable();
-  showAdminToast('Products reset to default ✅');
-}
-function clearAllOrders() {
-  if(!confirm('Delete all orders? This cannot be undone.')) return;
-  saveOrders([]);
-  renderOrdersTable();
-  renderDashboard();
-  showAdminToast('All orders cleared');
-}
-
-// ===== PAGE NAVIGATION =====
-function showAdminPage(page) {
-  document.querySelectorAll('.admin-page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', settings:'Settings' };
-  document.getElementById('admin-page-title').textContent = titles[page];
-  // Highlight sidebar
-  const items = document.querySelectorAll('.sidebar-item');
-  const pageIndex = { dashboard:0, products:1, orders:2, settings:3 };
-  if(items[pageIndex[page]]) items[pageIndex[page]].classList.add('active');
-
-  if(page==='products') renderProductsTable();
-  if(page==='orders') renderOrdersTable();
-  if(page==='dashboard') renderDashboard();
-}
-
-// ===== TOAST =====
-function showAdminToast(msg) {
-  const t = document.getElementById('admin-toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2400);
-}
-
-// Allow Enter key on login
-document.addEventListener('keydown', e => {
-  if(e.key==='Enter' && document.getElementById('login-screen').style.display !== 'none') adminLogin();
-});
 </script>
 </body>
 </html>
